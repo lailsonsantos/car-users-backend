@@ -62,7 +62,7 @@ public class SecurityConfig {
                     // Rotas públicas
                     auth.requestMatchers("/api/signin").permitAll();
                     auth.requestMatchers("/api/users").permitAll();
-                    auth.requestMatchers("/api/users/*").permitAll();
+                    auth.requestMatchers("/api/users/**").permitAll();
                     // Rotas privadas
                     auth.requestMatchers("/api/me").authenticated();
                     auth.requestMatchers("/api/cars/**").authenticated();
