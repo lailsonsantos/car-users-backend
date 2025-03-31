@@ -1,25 +1,39 @@
-
 pipeline {
-  agent any
-  environment {
-    HEROKU_API_KEY = credentials('heroku-api-key')
-    HEROKU_APP_NAME = 'pitang-app-backend'
-  }
-  stages {
-    stage('Build') {
-      steps {
-        sh 'mvn clean package -DskipTests'
-      }
+    agent any
+
+    tools {
+        maven 'Maven_3.8.6'
     }
-    stage('Deploy to Heroku') {
-      steps {
-        sh '''
-          curl https://cli-assets.heroku.com/install.sh | sh
-          echo "$HEROKU_API_KEY" | heroku auth:token
-          heroku git:remote -a $HEROKU_APP_NAME
-          git push heroku HEAD:master --force
-        '''
-      }
+
+    environment {
+        SONAR_HOST_URL = 'http://sonarqube:9000'
     }
-  }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                git branch: 'main', url: 'https://github.com/lailsonsantos/car-users-backend.git'
+            }
+        }
+
+        stage('Build & Test') {
+            steps {
+                sh './mvnw clean install'
+            }
+        }
+
+        stage('SonarQube Analysis') {
+            steps {
+                withSonarQubeEnv('SonarQube') {
+                    sh './mvnw sonar:sonar'
+                }
+            }
+        }
+
+        stage('Deploy to Nexus') {
+            steps {
+                sh './mvnw deploy --settings settings.xml'
+            }
+        }
+    }
 }
