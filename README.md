@@ -1,70 +1,143 @@
-# Pitang Challenge – Backend (Java Spring Boot)
+# Car Users API
 
-Este projeto é a API backend para o desafio técnico, desenvolvida com Spring Boot.
-
-## ⚙️ Tecnologias
-
-- Java 17
-- Spring Boot
-- JPA + H2 Database (banco em memória)
-- Maven
-- Docker + Jenkins (CI/CD)
-- Heroku (deploy)
-- Postman (testes)
+API RESTful para gerenciamento de usuários e carros. Desenvolvida com Spring Boot, documentada com Swagger e analisada com SonarQube. Artefatos são publicados via Nexus e integrados via Jenkins CI/CD.
 
 ---
 
-## ▶️ Como executar localmente
+## 📚 Estórias de Usuário (Scrum)
+
+1. Eu, como usuário, desejo me autenticar com login e senha, recebendo um token JWT.
+2. Eu, como usuário, desejo criar uma conta com meus dados pessoais e meus carros.
+3. Eu, como usuário autenticado, desejo acessar meus dados, incluindo carros.
+4. Eu, como usuário autenticado, desejo adicionar, editar e remover meus carros.
+5. Eu, como administrador, desejo listar, buscar, atualizar e remover usuários.
+6. Eu, como desenvolvedor, desejo visualizar a documentação via Swagger.
+7. Eu, como desenvolvedor, desejo garantir qualidade de código via SonarQube.
+8. Eu, como devops, desejo automatizar o build/teste/deploy via Jenkins e Nexus.
+
+---
+
+## 🛠️ Solução Técnica
+
+- **Spring Boot** com arquitetura REST
+- **JWT (JSON Web Token)** para autenticação
+- **Spring Security** para proteção de endpoints
+- **Swagger (springdoc-openapi)** para documentação
+- **SonarQube** para análise de código
+- **Nexus** como repositório de artefatos
+- **Jenkins** com pipeline automatizado
+- **Design Pattern: Strategy** aplicado para filtragem de usuários
+
+---
+
+## 🚀 Como executar o projeto
+
+### Pré-requisitos:
+- Java 17+
+- Docker + Docker Compose
+- Maven ou Wrapper (`./mvnw`)
+
+### Comandos:
 
 ```bash
-# Clonar o projeto
-git clone https://github.com/seu-usuario/pitang-challenge-backend.git
-cd pitang-challenge-backend
+# Subir Jenkins, SonarQube e Nexus
+docker compose up -d
 
-# Rodar com Maven
+# Rodar localmente (em outra aba)
 ./mvnw spring-boot:run
-# ou
-mvn spring-boot:run
 
-🧪 Testes
-mvn test
+# Acessar Swagger
+http://localhost:8080/swagger-ui.html
+```
 
-🐳 Docker
-docker build -t pitang-backend .
-docker run -p 8080:8080 pitang-backend
+---
 
-⚙️ Deploy no Heroku
-# Login
-heroku login
+## 📦 API
 
-# Criar app
-heroku create pitang-app-backend
+### 🔓 Rotas públicas (não requer token)
 
-# Deploy
-git push heroku main
-heroku open
+| Método | Rota             | Descrição                       |
+|--------|------------------|---------------------------------|
+| POST   | /api/signin      | Login com login/senha (JWT)     |
+| GET    | /api/users       | Listar usuários                 |
+| POST   | /api/users       | Criar usuário                   |
+| GET    | /api/users/{id}  | Buscar usuário por ID           |
+| PUT    | /api/users/{id}  | Atualizar usuário por ID        |
+| DELETE | /api/users/{id}  | Remover usuário por ID          |
 
-🤖 Jenkins (CI/CD)
-Este projeto contém um Jenkinsfile com:
+### 🔐 Rotas protegidas (JWT obrigatório)
 
-Build Maven
+| Método | Rota             | Descrição                       |
+|--------|------------------|---------------------------------|
+| GET    | /api/me          | Informações do usuário logado   |
+| GET    | /api/cars        | Listar carros do usuário logado |
+| POST   | /api/cars        | Criar carro                     |
+| GET    | /api/cars/{id}   | Buscar carro por ID             |
+| PUT    | /api/cars/{id}   | Atualizar carro por ID          |
+| DELETE | /api/cars/{id}   | Remover carro por ID            |
 
-Deploy automático para o Heroku via Git
+---
 
-Requer configurações:
+## 🧪 Exemplo JSON de criação de usuário
 
-github-token (GitHub)
+```json
+{
+  "firstName": "Hello",
+  "lastName": "World",
+  "email": "hello@world.com",
+  "birthday": "1990-05-01",
+  "login": "hello.world",
+  "password": "h3llo",
+  "phone": "988888888",
+  "cars": [
+    {
+      "year": 2018,
+      "licensePlate": "PDV-0625",
+      "model": "Audi",
+      "color": "White"
+    }
+  ]
+}
+```
 
-heroku-api-key (Heroku)
+---
 
-📫 Rotas principais
-POST	/api/signin	Login
-GET	/api/users	Listar usuários
-POST	/api/users	Criar usuário
-PUT	/api/users/{id}	Atualizar usuário
-DELETE	/api/users/{id}	Remover usuário
-GET	/api/cars	Listar carros
-POST	/api/cars	Criar carro
+## ⚠️ Tratamento de Erros
 
-🧪 Testes via Postman
-Importe o arquivo pitang-challenge-api.postman_collection.json para testar as rotas.
+- `Invalid login or password`
+- `Login already exists`
+- `Email already exists`
+- `Invalid fields`
+- `Missing fields`
+- `Unauthorized`
+- `License plate already exists`
+
+---
+
+## 🧪 Testes
+
+```bash
+./mvnw test
+```
+
+---
+
+## 👷 Jenkins CI
+
+Jenkinsfile pronto com:
+- Build e testes
+- Análise SonarQube
+- Deploy no Nexus
+
+---
+
+## 📘 Swagger
+
+Disponível em:  
+📎 `http://localhost:8080/swagger-ui.html`
+
+---
+
+## 👤 Autor
+
+Lailson Santos - [github.com/lailsonsantos](https://github.com/lailsonsantos)
