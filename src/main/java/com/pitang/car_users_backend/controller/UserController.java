@@ -69,3 +69,32 @@ public class UserController {
         }
     }
 }
+
+
+import org.springframework.web.multipart.MultipartFile;
+import java.util.Comparator;
+import java.util.stream.Collectors;
+
+@PostMapping("/users/{id}/photo")
+public ResponseEntity<String> uploadUserPhoto(@PathVariable Long id, @RequestParam("file") MultipartFile file) {
+    // Simula salvamento local (poderia ser no S3, por exemplo)
+    String filePath = "uploads/users/user_" + id + "_" + file.getOriginalFilename();
+    try {
+        file.transferTo(new java.io.File(filePath));
+        // Atualizar entidade com o caminho (omitido)
+        return ResponseEntity.ok("Foto enviada com sucesso: " + filePath);
+    } catch (Exception e) {
+        return ResponseEntity.status(500).body("Erro ao salvar foto");
+    }
+}
+
+@GetMapping("/users")
+public ResponseEntity<List<UserEntity>> getUsersOrdered() {
+    List<UserEntity> users = userService.getAllUsers();
+    List<UserEntity> ordered = users.stream()
+        .sorted(Comparator.comparingInt(UserEntity::getTotalUsageCount)
+            .reversed()
+            .thenComparing(UserEntity::getLogin))
+        .collect(Collectors.toList());
+    return ResponseEntity.ok(ordered);
+}

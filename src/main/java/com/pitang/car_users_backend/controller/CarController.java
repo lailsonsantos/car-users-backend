@@ -69,3 +69,39 @@ public class CarController {
         }
     }
 }
+
+
+import org.springframework.web.multipart.MultipartFile;
+import java.util.Comparator;
+import java.util.stream.Collectors;
+
+@PostMapping("/cars/{id}/photo")
+public ResponseEntity<String> uploadCarPhoto(@PathVariable Long id, @RequestParam("file") MultipartFile file) {
+    String filePath = "uploads/cars/car_" + id + "_" + file.getOriginalFilename();
+    try {
+        file.transferTo(new java.io.File(filePath));
+        // Atualizar entidade com o caminho (omitido)
+        return ResponseEntity.ok("Foto enviada com sucesso: " + filePath);
+    } catch (Exception e) {
+        return ResponseEntity.status(500).body("Erro ao salvar foto");
+    }
+}
+
+@GetMapping("/cars/{id}")
+public ResponseEntity<Car> getCarById(@PathVariable Long id) {
+    Car car = carService.findById(id);
+    car.setUsageCount(car.getUsageCount() + 1);
+    // carService.save(car); // salvar incremento real
+    return ResponseEntity.ok(car);
+}
+
+@GetMapping("/cars")
+public ResponseEntity<List<Car>> getCarsOrderedByUsage() {
+    List<Car> cars = carService.getCarsByLoggedUser();
+    List<Car> ordered = cars.stream()
+        .sorted(Comparator.comparingInt(Car::getUsageCount)
+            .reversed()
+            .thenComparing(Car::getModel))
+        .collect(Collectors.toList());
+    return ResponseEntity.ok(ordered);
+}

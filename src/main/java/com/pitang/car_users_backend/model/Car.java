@@ -13,6 +13,10 @@ import java.util.Objects;
 @NoArgsConstructor
 public class Car {
 
+    private int usageCount;
+
+    private String photoUrl;
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

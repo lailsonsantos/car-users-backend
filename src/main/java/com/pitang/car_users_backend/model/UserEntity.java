@@ -16,6 +16,12 @@ import java.util.Objects;
 @NoArgsConstructor
 public class UserEntity {
 
+    private String photoUrl;
+
+    public int getTotalUsageCount() {
+        return cars != null ? cars.stream().mapToInt(Car::getUsageCount).sum() : 0;
+    }
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
