@@ -1,10 +1,10 @@
 package com.pitang.car_users_backend.controller;
 
+import com.pitang.car_users_backend.Mapper.UserMapper;
 import com.pitang.car_users_backend.dto.UserRequest;
 import com.pitang.car_users_backend.dto.UserResponse;
 import com.pitang.car_users_backend.exception.UserErrorCode;
 import com.pitang.car_users_backend.exception.UserException;
-import com.pitang.car_users_backend.Mapper.UserMapper;
 import com.pitang.car_users_backend.model.UserEntity;
 import com.pitang.car_users_backend.service.UserService;
 import org.springframework.http.HttpStatus;
@@ -116,10 +116,25 @@ public class UserController {
      */
     @PostMapping("/{id}/photo")
     public ResponseEntity<String> uploadUserPhoto(@PathVariable Long id, @RequestParam("file") MultipartFile file) {
-        String filePath = "uploads/users/user_" + id + "_" + file.getOriginalFilename();
+
+        String relativePath = "uploads/users/user_" + id + "_" + file.getOriginalFilename();
+
+        String absolutePath = new java.io.File(relativePath).getAbsolutePath();
+
         try {
-            file.transferTo(new java.io.File(filePath));
-            return ResponseEntity.ok("Foto enviada com sucesso: " + filePath);
+            java.io.File directory = new java.io.File("uploads/users");
+            if (!directory.exists()) {
+                directory.mkdirs();
+            }
+
+            java.io.File destFile = new java.io.File(absolutePath);
+            file.transferTo(destFile);
+
+            UserEntity user = service.getUserById(id);
+            user.setPhotoUrl(relativePath);
+            service.updateUser(id, user);
+
+            return ResponseEntity.ok("Foto enviada com sucesso: " + relativePath);
         } catch (Exception e) {
             throw new UserException(UserErrorCode.UPLOAD_FAILED);
         }

@@ -4,7 +4,9 @@ import com.pitang.car_users_backend.exception.UserErrorCode;
 import com.pitang.car_users_backend.model.UserEntity;
 import com.pitang.car_users_backend.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.userdetails.*;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 /**

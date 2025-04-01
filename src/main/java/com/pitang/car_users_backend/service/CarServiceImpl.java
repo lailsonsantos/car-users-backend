@@ -3,7 +3,6 @@ package com.pitang.car_users_backend.service;
 import com.pitang.car_users_backend.exception.CarErrorCode;
 import com.pitang.car_users_backend.exception.CarException;
 import com.pitang.car_users_backend.model.Car;
-import com.pitang.car_users_backend.model.UserEntity;
 import com.pitang.car_users_backend.repository.CarRepository;
 import com.pitang.car_users_backend.util.CarValidationUtil;
 import org.springframework.stereotype.Service;
@@ -78,17 +77,23 @@ public class CarServiceImpl implements CarService {
 
     @Override
     public Car getCarById(Long id) {
+        return repository.findById(id)
+                .orElseThrow(() -> new CarException(CarErrorCode.CAR_NOT_FOUND));
+    }
+
+    @Override
+    public Car getCarUserById(Long id) {
         Car car = repository.findById(id)
                 .orElseThrow(() -> new CarException(CarErrorCode.CAR_NOT_FOUND));
 
         // Incrementa o uso do carro
         car.setUsageCount(car.getUsageCount() + 1);
-        repository.save(car);
+        this.updateCar(id, car);
 
         // Se o carro tem dono, atualiza o usageCount total do usuário
         if (car.getUser() != null) {
             car.getUser().recalculateTotalUsage();
-            userService.createUser(car.getUser());
+            userService.updateUser(car.getUser().getId(), car.getUser());
         }
 
         return car;

@@ -37,7 +37,7 @@ public interface CarService {
     List<Car> getAllCars();
 
     /**
-     * Retorna um carro específico pelo ID e incrementa o uso do carro.
+     * Retorna um carro específico pelo ID.
      * @param id ID do carro
      * @return carro encontrado
      */
@@ -56,4 +56,11 @@ public interface CarService {
      * @return true se existir, false caso contrário
      */
     boolean licensePlateExists(String licensePlate);
+
+    /**
+     * Retorna um carro específico pelo ID e incrementa o uso do carro.
+     * @param id ID do carro
+     * @return carro encontrado
+     */
+    Car getCarUserById(Long id);
 }

@@ -11,6 +11,8 @@ import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.builders.WebSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -18,7 +20,12 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+/**
+ * Classe de configuração de segurança, responsável por configurar
+ * a autenticação, autorização e filtros de segurança (JWT, etc.).
+ */
 @Configuration
+@EnableWebSecurity
 public class SecurityConfig {
 
     @Autowired
@@ -31,7 +38,10 @@ public class SecurityConfig {
     private CustomUserDetailsService customUserDetailsService;
 
     /**
-     * Configura o PasswordEncoder para criptografia de senhas
+     * Configura o PasswordEncoder para criptografia de senhas.
+     * Aqui, usamos o BCryptPasswordEncoder.
+     *
+     * @return instância de PasswordEncoder
      */
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -39,8 +49,10 @@ public class SecurityConfig {
     }
 
     /**
-     * Configura o provedor de autenticação com o CustomUserDetailsService
-     * @return
+     * Configura o AuthenticationProvider usando o CustomUserDetailsService
+     * para buscar usuários e o BCrypt para encodar senhas.
+     *
+     * @return provider de autenticação para uso no AuthenticationManager
      */
     @Bean
     public AuthenticationProvider authenticationProvider() {
@@ -51,10 +63,12 @@ public class SecurityConfig {
     }
 
     /**
-     * Permite injetar o AuthenticationManager em outras classes, como no AuthController
-     * @param config
-     * @return
-     * @throws Exception
+     * Permite injetar o AuthenticationManager (gerenciado pelo Spring)
+     * em outras classes, como Controllers.
+     *
+     * @param config objeto de configuração de autenticação
+     * @return instância do AuthenticationManager
+     * @throws Exception caso ocorra erro ao obter o manager
      */
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
@@ -62,10 +76,13 @@ public class SecurityConfig {
     }
 
     /**
-     * Configuração da cadeia de filtros de segurança
-     * @param http
-     * @return
-     * @throws Exception
+     * Configuração principal da cadeia de filtros de segurança.
+     * Define quais rotas são públicas e quais exigem autenticação,
+     * desabilita CSRF e define session como STATELESS (usando JWT).
+     *
+     * @param http objeto HttpSecurity para configurar
+     * @return instância final de SecurityFilterChain
+     * @throws Exception caso ocorra erro na configuração
      */
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -75,18 +92,23 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> {
 
-                    // Rotas públicas
+                    // ROTAS PÚBLICAS DA SUA APLICAÇÃO
+                    auth.requestMatchers("/swagger-ui.html").permitAll();
+                    auth.requestMatchers("/swagger-ui/**").permitAll();
+                    auth.requestMatchers("/v3/api-docs/**").permitAll();
+                    auth.requestMatchers("/v3/api-docs.yaml").permitAll();
+                    auth.requestMatchers("/swagger-resources/**").permitAll();
+                    auth.requestMatchers("/webjars/**").permitAll();
+                    auth.requestMatchers("/h2-console/**").permitAll();
                     auth.requestMatchers("/api/signin").permitAll();
                     auth.requestMatchers("/api/users").permitAll();
                     auth.requestMatchers("/api/users/**").permitAll();
-                    auth.requestMatchers("/v3/api-docs/**").permitAll();
-                    auth.requestMatchers("/swagger-ui/**").permitAll();
-                    auth.requestMatchers("/swagger-ui.html").permitAll();
 
-                    // Rotas privadas
+                    // ROTAS PRIVADAS (AUTENTICAÇÃO REQUERIDA)
                     auth.requestMatchers("/api/me").authenticated();
                     auth.requestMatchers("/api/cars/**").authenticated();
 
+                    // Qualquer outra rota não especificada será autenticada
                     auth.anyRequest().authenticated();
                 });
 
@@ -95,4 +117,5 @@ public class SecurityConfig {
 
         return http.build();
     }
+
 }

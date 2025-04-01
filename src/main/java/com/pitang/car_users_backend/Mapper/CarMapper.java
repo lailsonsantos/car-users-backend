@@ -3,6 +3,7 @@ package com.pitang.car_users_backend.Mapper;
 import com.pitang.car_users_backend.dto.CarRequest;
 import com.pitang.car_users_backend.dto.CarResponse;
 import com.pitang.car_users_backend.model.Car;
+import com.pitang.car_users_backend.model.UserEntity;
 
 /**
  * Classe utilitária para conversão entre Car e seus DTOs.
@@ -14,12 +15,13 @@ public class CarMapper {
      * @param request o objeto de requisição
      * @return a entidade de carro
      */
-    public static Car toEntity(CarRequest request) {
+    public static Car toEntity(CarRequest request, UserEntity user) {
         Car car = new Car();
         car.setYear(request.getYear());
         car.setLicensePlate(request.getLicensePlate());
         car.setModel(request.getModel());
         car.setColor(request.getColor());
+        car.setUser(user);
         return car;
     }
 

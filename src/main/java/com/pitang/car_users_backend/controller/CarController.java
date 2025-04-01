@@ -6,10 +6,13 @@ import com.pitang.car_users_backend.dto.CarResponse;
 import com.pitang.car_users_backend.exception.CarErrorCode;
 import com.pitang.car_users_backend.exception.CarException;
 import com.pitang.car_users_backend.model.Car;
+import com.pitang.car_users_backend.model.UserEntity;
 import com.pitang.car_users_backend.service.CarService;
+import com.pitang.car_users_backend.service.UserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -22,9 +25,11 @@ import java.util.stream.Collectors;
 public class CarController {
 
     private final CarService service;
+    private final UserService userService;
 
-    public CarController(CarService service) {
+    public CarController(CarService service, UserService userService) {
         this.service = service;
+        this.userService = userService;
     }
 
     /**
@@ -49,7 +54,7 @@ public class CarController {
     @GetMapping("/{id}")
     public ResponseEntity<CarResponse> getById(@PathVariable Long id, @RequestParam(required = false) Long userId) {
         validateUser(userId);
-        Car car = service.getCarById(id);
+        Car car = service.getCarUserById(id);
         return ResponseEntity.ok(CarMapper.toResponse(car));
     }
 
@@ -62,7 +67,8 @@ public class CarController {
     @PostMapping
     public ResponseEntity<CarResponse> create(@RequestParam(required = false) Long userId, @RequestBody CarRequest request) {
         validateUser(userId);
-        Car carEntity = CarMapper.toEntity(request);
+        UserEntity user = userService.getUserById(userId);
+        Car carEntity = CarMapper.toEntity(request, user);
         Car created = service.createCar(carEntity);
         return ResponseEntity.status(201).body(CarMapper.toResponse(created));
     }
@@ -77,7 +83,8 @@ public class CarController {
     @PutMapping("/{id}")
     public ResponseEntity<CarResponse> update(@PathVariable Long id, @RequestParam(required = false) Long userId, @RequestBody CarRequest request) {
         validateUser(userId);
-        Car carEntity = CarMapper.toEntity(request);
+        UserEntity user = userService.getUserById(userId);
+        Car carEntity = CarMapper.toEntity(request, user);
         Car updated = service.updateCar(id, carEntity);
         return ResponseEntity.ok(CarMapper.toResponse(updated));
     }
@@ -103,10 +110,24 @@ public class CarController {
      */
     @PostMapping("/{id}/photo")
     public ResponseEntity<String> uploadCarPhoto(@PathVariable Long id, @RequestParam("file") MultipartFile file) {
-        String filePath = "uploads/cars/car_" + id + "_" + file.getOriginalFilename();
+
+        String relativePath = "uploads/cars/car_" + id + "_" + file.getOriginalFilename();
+        String absolutePath = new java.io.File(relativePath).getAbsolutePath();
+
         try {
-            file.transferTo(new java.io.File(filePath));
-            return ResponseEntity.ok("Foto enviada com sucesso: " + filePath);
+            java.io.File directory = new java.io.File("uploads/cars");
+            if (!directory.exists()) {
+                directory.mkdirs();
+            }
+
+            java.io.File destFile = new java.io.File(absolutePath);
+            file.transferTo(destFile);
+
+            Car car = service.getCarById(id);
+            car.setPhotoUrl(relativePath);
+            service.updateCar(id, car);
+
+            return ResponseEntity.ok("Foto enviada com sucesso: " + relativePath);
         } catch (Exception e) {
             throw new CarException(CarErrorCode.UPLOAD_FAILED);
         }

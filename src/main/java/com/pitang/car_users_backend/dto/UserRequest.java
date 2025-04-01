@@ -1,5 +1,6 @@
 package com.pitang.car_users_backend.dto;
 
+import com.pitang.car_users_backend.model.Car;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -19,4 +20,5 @@ public class UserRequest {
     private String login;
     private String password;
     private String phone;
+    private List<Car> cars;
 }

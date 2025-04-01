@@ -40,6 +40,10 @@ public class UserServiceImpl implements UserService {
         user.setCreatedAt(LocalDateTime.now());
         user.setLastLogin(null);
 
+        if (user.getCars() != null) {
+            user.getCars().forEach(car -> car.setUser(user));
+        }
+
         return repository.save(user);
     }
 

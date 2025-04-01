@@ -1,6 +1,7 @@
 package com.pitang.car_users_backend.security;
 
 import com.pitang.car_users_backend.service.CustomUserDetailsService;
+import io.micrometer.common.lang.NonNull;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -42,9 +43,9 @@ public class JwtAuthFilter extends OncePerRequestFilter {
      * @throws IOException erro de I/O
      */
     @Override
-    protected void doFilterInternal(HttpServletRequest request,
-                                    HttpServletResponse response,
-                                    FilterChain filterChain)
+    protected void doFilterInternal(@NonNull HttpServletRequest request,
+                                    @NonNull HttpServletResponse response,
+                                    @NonNull FilterChain filterChain)
             throws ServletException, IOException {
 
         // Obtém o header de autorização

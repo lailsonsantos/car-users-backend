@@ -3,6 +3,7 @@ package com.pitang.car_users_backend.Mapper;
 import com.pitang.car_users_backend.dto.UserRequest;
 import com.pitang.car_users_backend.dto.UserResponse;
 import com.pitang.car_users_backend.model.UserEntity;
+
 import java.util.stream.Collectors;
 
 /**
@@ -24,6 +25,7 @@ public class UserMapper {
         user.setLogin(request.getLogin());
         user.setPassword(request.getPassword());
         user.setPhone(request.getPhone());
+        user.setCars(request.getCars());
         return user;
     }
 

@@ -6,6 +6,7 @@ import com.pitang.car_users_backend.exception.CarErrorCode;
 import com.pitang.car_users_backend.exception.CarException;
 import com.pitang.car_users_backend.model.Car;
 import com.pitang.car_users_backend.service.CarService;
+import com.pitang.car_users_backend.service.UserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -35,7 +36,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class CarControllerTest {
 
     private CarService carService;
-    private CarController carController;
     private MockMvc mockMvc;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -45,7 +45,8 @@ class CarControllerTest {
     @BeforeEach
     void setUp() {
         carService = Mockito.mock(CarService.class);
-        carController = new CarController(carService);
+        UserService userService = Mockito.mock(UserService.class);
+        CarController carController = new CarController(carService, userService);
         mockMvc = MockMvcBuilders.standaloneSetup(carController).build();
     }
 
@@ -69,7 +70,7 @@ class CarControllerTest {
         Car car = new Car();
         car.setId(10L);
         car.setLicensePlate("ABC-1234");
-        when(carService.getCarById(10L)).thenReturn(car);
+        when(carService.getCarUserById(10L)).thenReturn(car);
 
         mockMvc.perform(get("/api/cars/10?userId=1"))
                 .andExpect(status().isOk())
