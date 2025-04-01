@@ -7,15 +7,14 @@ import lombok.NoArgsConstructor;
 
 import java.util.Objects;
 
+/**
+ * Entidade que representa um carro no sistema.
+ */
 @Entity
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 public class Car {
-
-    private int usageCount;
-
-    private String photoUrl;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -24,7 +23,7 @@ public class Car {
     @Column(name = "fabrication_year")
     private Integer year;
 
-    @Column(name = "licensePlate")
+    @Column(name = "license_plate")
     private String licensePlate;
 
     @Column(name = "model")
@@ -36,6 +35,12 @@ public class Car {
     @ManyToOne
     @JoinColumn(name = "user_id")
     private UserEntity user;
+
+    @Column(name = "usage_count")
+    private int usageCount;
+
+    @Column(name = "photo_url")
+    private String photoUrl;
 
     @Override
     public boolean equals(Object o) {

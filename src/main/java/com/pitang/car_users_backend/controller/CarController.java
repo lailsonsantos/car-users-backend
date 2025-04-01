@@ -1,14 +1,22 @@
 package com.pitang.car_users_backend.controller;
 
+import com.pitang.car_users_backend.Mapper.CarMapper;
+import com.pitang.car_users_backend.dto.CarRequest;
+import com.pitang.car_users_backend.dto.CarResponse;
+import com.pitang.car_users_backend.exception.CarErrorCode;
+import com.pitang.car_users_backend.exception.CarException;
 import com.pitang.car_users_backend.model.Car;
 import com.pitang.car_users_backend.service.CarService;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
+import org.springframework.web.multipart.MultipartFile;
+import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
+import java.util.stream.Collectors;
 
+/**
+ * Controller para gerenciamento de carros.
+ */
 @RestController
 @RequestMapping("/api/cars")
 public class CarController {
@@ -19,89 +27,119 @@ public class CarController {
         this.service = service;
     }
 
+    /**
+     * Retorna todos os carros do usuário logado.
+     * @param userId o id do usuário (simula token)
+     * @return a lista de carros do usuário
+     */
     @GetMapping
-    public ResponseEntity<List<Car>> getAll() {
-        List<Car> cars = service.getAllCars();
-        return ResponseEntity.ok(cars);
+    public ResponseEntity<List<CarResponse>> getAll(@RequestParam(required = false) Long userId) {
+        validateUser(userId);
+        List<Car> cars = service.getCarsByLoggedUser(userId);
+        List<CarResponse> response = cars.stream().map(CarMapper::toResponse).collect(Collectors.toList());
+        return ResponseEntity.ok(response);
     }
 
+    /**
+     * Retorna um carro pelo id.
+     * @param id o id do carro
+     * @param userId o id do usuário
+     * @return o objeto de resposta do carro
+     */
     @GetMapping("/{id}")
-    public ResponseEntity<?> getById(@PathVariable Long id) {
-        try {
-            Car car = service.getCarById(id);
-            return ResponseEntity.ok(car);
-        } catch (RuntimeException ex) { // Ex: CarNotFoundException
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Map.of("message", "Car not found", "errorCode", 404));
-        }
+    public ResponseEntity<CarResponse> getById(@PathVariable Long id, @RequestParam(required = false) Long userId) {
+        validateUser(userId);
+        Car car = service.getCarById(id);
+        return ResponseEntity.ok(CarMapper.toResponse(car));
     }
 
+    /**
+     * Cria um novo carro para o usuário logado.
+     * @param userId o id do usuário
+     * @param request objeto de requisição do carro
+     * @return o objeto de resposta do carro criado
+     */
     @PostMapping
-    public ResponseEntity<?> create(@RequestBody Car car) {
-        try {
-            Car createdCar = service.createCar(car);
-            return ResponseEntity.status(HttpStatus.CREATED).body(createdCar);
-        } catch (RuntimeException ex) {
-            return ResponseEntity.badRequest()
-                    .body(Map.of("message", ex.getMessage(), "errorCode", 2));
-        }
+    public ResponseEntity<CarResponse> create(@RequestParam(required = false) Long userId, @RequestBody CarRequest request) {
+        validateUser(userId);
+        Car carEntity = CarMapper.toEntity(request);
+        Car created = service.createCar(carEntity);
+        return ResponseEntity.status(201).body(CarMapper.toResponse(created));
     }
 
+    /**
+     * Atualiza um carro do usuário logado.
+     * @param id o id do carro
+     * @param userId o id do usuário
+     * @param request objeto de requisição do carro
+     * @return o objeto de resposta do carro atualizado
+     */
     @PutMapping("/{id}")
-    public ResponseEntity<?> update(@PathVariable Long id, @RequestBody Car car) {
-        try {
-            Car updatedCar = service.updateCar(id, car);
-            return ResponseEntity.ok(updatedCar);
-        } catch (RuntimeException ex) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Map.of("message", "Car not found", "errorCode", 404));
-        }
+    public ResponseEntity<CarResponse> update(@PathVariable Long id, @RequestParam(required = false) Long userId, @RequestBody CarRequest request) {
+        validateUser(userId);
+        Car carEntity = CarMapper.toEntity(request);
+        Car updated = service.updateCar(id, carEntity);
+        return ResponseEntity.ok(CarMapper.toResponse(updated));
     }
 
+    /**
+     * Remove um carro do usuário logado.
+     * @param id o id do carro
+     * @param userId o id do usuário
+     * @return resposta sem conteúdo
+     */
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> delete(@PathVariable Long id) {
+    public ResponseEntity<Void> delete(@PathVariable Long id, @RequestParam(required = false) Long userId) {
+        validateUser(userId);
+        service.deleteCar(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    /**
+     * Faz o upload da foto de um carro.
+     * @param id o id do carro
+     * @param file o arquivo da foto
+     * @return mensagem de sucesso
+     */
+    @PostMapping("/{id}/photo")
+    public ResponseEntity<String> uploadCarPhoto(@PathVariable Long id, @RequestParam("file") MultipartFile file) {
+        String filePath = "uploads/cars/car_" + id + "_" + file.getOriginalFilename();
         try {
-            service.deleteCar(id);
-            return ResponseEntity.noContent().build();
-        } catch (RuntimeException ex) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Map.of("message", "Car not found", "errorCode", 404));
+            file.transferTo(new java.io.File(filePath));
+            return ResponseEntity.ok("Foto enviada com sucesso: " + filePath);
+        } catch (Exception e) {
+            throw new CarException(CarErrorCode.UPLOAD_FAILED);
         }
     }
-}
 
-
-import org.springframework.web.multipart.MultipartFile;
-import java.util.Comparator;
-import java.util.stream.Collectors;
-
-@PostMapping("/cars/{id}/photo")
-public ResponseEntity<String> uploadCarPhoto(@PathVariable Long id, @RequestParam("file") MultipartFile file) {
-    String filePath = "uploads/cars/car_" + id + "_" + file.getOriginalFilename();
-    try {
-        file.transferTo(new java.io.File(filePath));
-        // Atualizar entidade com o caminho (omitido)
-        return ResponseEntity.ok("Foto enviada com sucesso: " + filePath);
-    } catch (Exception e) {
-        return ResponseEntity.status(500).body("Erro ao salvar foto");
+    /**
+     * Retorna os carros do usuário ordenados por uso.
+     * @param userId o id do usuário
+     * @return a lista ordenada de carros
+     */
+    @GetMapping("/ordered")
+    public ResponseEntity<List<CarResponse>> getCarsOrderedByUsage(@RequestParam(required = false) Long userId) {
+        validateUser(userId);
+        List<Car> cars = service.getCarsByLoggedUser(userId);
+        List<CarResponse> ordered = cars.stream()
+                .sorted(Comparator.comparingInt(Car::getUsageCount)
+                        .reversed()
+                        .thenComparing(Car::getModel))
+                .map(CarMapper::toResponse)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(ordered);
     }
-}
 
-@GetMapping("/cars/{id}")
-public ResponseEntity<Car> getCarById(@PathVariable Long id) {
-    Car car = carService.findById(id);
-    car.setUsageCount(car.getUsageCount() + 1);
-    // carService.save(car); // salvar incremento real
-    return ResponseEntity.ok(car);
-}
-
-@GetMapping("/cars")
-public ResponseEntity<List<Car>> getCarsOrderedByUsage() {
-    List<Car> cars = carService.getCarsByLoggedUser();
-    List<Car> ordered = cars.stream()
-        .sorted(Comparator.comparingInt(Car::getUsageCount)
-            .reversed()
-            .thenComparing(Car::getModel))
-        .collect(Collectors.toList());
-    return ResponseEntity.ok(ordered);
+    /**
+     * Valida se o usuário (token) está presente e é válido.
+     * @param userId id do usuário
+     */
+    private void validateUser(Long userId) {
+        if (userId == null) {
+            throw new CarException(CarErrorCode.UNAUTHORIZED);
+        }
+        if (userId <= 0) {
+            throw new CarException(CarErrorCode.UNAUTHORIZED_SESSION);
+        }
+    }
 }

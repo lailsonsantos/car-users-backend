@@ -12,6 +12,9 @@ import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.util.Date;
 
+/**
+ * Classe utilitária para geração, parsing e validação de tokens JWT.
+ */
 @Component
 public class JwtUtil {
 
@@ -23,10 +26,19 @@ public class JwtUtil {
     @Value("${jwt.expiration}")
     private Long jwtExpiration;
 
+    /**
+     * Retorna a {@link Key} de assinatura gerada a partir do secret.
+     * @return chave HMAC
+     */
     private Key getSigningKey() {
         return Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
     }
 
+    /**
+     * Gera um token JWT para o usuário especificado.
+     * @param username nome de usuário
+     * @return token JWT
+     */
     public String generateToken(String username) {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + jwtExpiration);
@@ -39,6 +51,11 @@ public class JwtUtil {
                 .compact();
     }
 
+    /**
+     * Retorna o nome de usuário contido no token JWT.
+     * @param token token JWT
+     * @return username extraído do token
+     */
     public String getUsernameFromToken(String token) {
         return Jwts.parserBuilder()
                 .setSigningKey(getSigningKey())
@@ -48,6 +65,11 @@ public class JwtUtil {
                 .getSubject();
     }
 
+    /**
+     * Valida se o token JWT está íntegro, não expirado e assinado corretamente.
+     * @param token token JWT
+     * @return true se válido, false caso contrário
+     */
     public boolean validateToken(String token) {
         try {
             Jwts.parserBuilder()

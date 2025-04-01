@@ -1,15 +1,14 @@
 package com.pitang.car_users_backend.controller;
 
 import com.pitang.car_users_backend.dto.LoginRequest;
+import com.pitang.car_users_backend.exception.UserErrorCode;
+import com.pitang.car_users_backend.exception.UserException;
 import com.pitang.car_users_backend.model.UserEntity;
 import com.pitang.car_users_backend.repository.UserRepository;
 import com.pitang.car_users_backend.security.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.authentication.*;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -20,6 +19,10 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Controlador responsável pela autenticação de usuários (login).
+ * Permite autenticar via login e senha, gerando um token JWT em caso de sucesso.
+ */
 @RestController
 @RequestMapping("/api")
 public class AuthController {
@@ -33,9 +36,15 @@ public class AuthController {
     @Autowired
     private JwtUtil jwtUtil;
 
-    @Autowired
-    private PasswordEncoder passwordEncoder;
 
+    /**
+     * Realiza a autenticação de um usuário com base em seu login e senha.
+     * Gera um token JWT se as credenciais forem válidas.
+     *
+     * @param loginRequest objeto contendo login e password
+     * @return token JWT no corpo da resposta em caso de sucesso
+     * @throws UserException com código {@link UserErrorCode#INVALID_LOGIN_OR_PASSWORD} se credenciais falharem
+     */
     @PostMapping("/signin")
     public ResponseEntity<?> authenticateUser(@RequestBody LoginRequest loginRequest) {
         try {
@@ -47,15 +56,15 @@ public class AuthController {
                     )
             );
 
-            // Define a autenticação no contexto de segurança para ser utilizada em outras requisições, se necessário.
+            // Define a autenticação no contexto de segurança
             SecurityContextHolder.getContext().setAuthentication(authentication);
 
             // Gera o token JWT
             String token = jwtUtil.generateToken(loginRequest.getLogin());
 
-            // Atualiza o lastLogin do usuário e salva a alteração
+            // Atualiza o lastLogin do usuário
             UserEntity user = usuarioRepository.findByLogin(loginRequest.getLogin())
-                    .orElseThrow(() -> new UsernameNotFoundException("Invalid login or password"));
+                    .orElseThrow(() -> new UserException(UserErrorCode.INVALID_LOGIN_OR_PASSWORD));
             user.setLastLogin(LocalDateTime.now());
             usuarioRepository.save(user);
 
@@ -64,11 +73,8 @@ public class AuthController {
             responseBody.put("token", token);
             return ResponseEntity.ok(responseBody);
 
-        } catch (BadCredentialsException ex) {
-            Map<String, Object> errorBody = new HashMap<>();
-            errorBody.put("message", "Invalid login or password");
-            errorBody.put("errorCode", 1);
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorBody);
+        } catch (BadCredentialsException | UsernameNotFoundException ex) {
+            throw new UserException(UserErrorCode.INVALID_LOGIN_OR_PASSWORD);
         }
     }
 }

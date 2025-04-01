@@ -7,6 +7,9 @@ import lombok.Setter;
 
 import java.util.Objects;
 
+/**
+ * DTO que representa a requisição de login, contendo login e password.
+ */
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter

@@ -30,13 +30,18 @@ public class SecurityConfig {
     @Autowired
     private CustomUserDetailsService customUserDetailsService;
 
-    // Configura o PasswordEncoder para criptografia de senhas
+    /**
+     * Configura o PasswordEncoder para criptografia de senhas
+     */
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
-    // Configura o provedor de autenticação com o CustomUserDetailsService
+    /**
+     * Configura o provedor de autenticação com o CustomUserDetailsService
+     * @return
+     */
     @Bean
     public AuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
@@ -45,13 +50,23 @@ public class SecurityConfig {
         return authProvider;
     }
 
-    // Permite injetar o AuthenticationManager em outras classes, como no AuthController
+    /**
+     * Permite injetar o AuthenticationManager em outras classes, como no AuthController
+     * @param config
+     * @return
+     * @throws Exception
+     */
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();
     }
 
-    // Configuração da cadeia de filtros de segurança
+    /**
+     * Configuração da cadeia de filtros de segurança
+     * @param http
+     * @return
+     * @throws Exception
+     */
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
@@ -59,14 +74,19 @@ public class SecurityConfig {
                 .exceptionHandling(exception -> exception.authenticationEntryPoint(jwtAuthEntryPoint))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> {
+
                     // Rotas públicas
                     auth.requestMatchers("/api/signin").permitAll();
                     auth.requestMatchers("/api/users").permitAll();
                     auth.requestMatchers("/api/users/**").permitAll();
+                    auth.requestMatchers("/v3/api-docs/**").permitAll();
+                    auth.requestMatchers("/swagger-ui/**").permitAll();
+                    auth.requestMatchers("/swagger-ui.html").permitAll();
+
                     // Rotas privadas
                     auth.requestMatchers("/api/me").authenticated();
                     auth.requestMatchers("/api/cars/**").authenticated();
-                    // Outras rotas exigem autenticação
+
                     auth.anyRequest().authenticated();
                 });
 

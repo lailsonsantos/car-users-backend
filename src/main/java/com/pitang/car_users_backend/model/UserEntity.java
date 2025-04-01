@@ -10,26 +10,24 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 
+/**
+ * Entidade que representa um usuário do sistema.
+ * Agora possui um campo persistido para armazenar o total de utilizações.
+ */
 @Entity
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 public class UserEntity {
 
-    private String photoUrl;
-
-    public int getTotalUsageCount() {
-        return cars != null ? cars.stream().mapToInt(Car::getUsageCount).sum() : 0;
-    }
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "firstName")
+    @Column(name = "first_name")
     private String firstName;
 
-    @Column(name = "lastName")
+    @Column(name = "last_name")
     private String lastName;
 
     @Column(name = "email")
@@ -47,14 +45,34 @@ public class UserEntity {
     @Column(name = "phone")
     private String phone;
 
-    @Column(name = "createdAt")
+    @Column(name = "created_at")
     private LocalDateTime createdAt;
 
-    @Column(name = "lastLogin")
+    @Column(name = "last_login")
     private LocalDateTime lastLogin;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Car> cars;
+
+    @Column(name = "photo_url")
+    private String photoUrl;
+
+    @Column(name = "total_usage_count")
+    private int totalUsageCount;
+
+    /**
+     * Recalcula a soma de uso de todos os carros, persiste em totalUsageCount.
+     * Caso prefira sempre manter sincronizado com o somatório real.
+     */
+    public void recalculateTotalUsage() {
+        if (cars == null || cars.isEmpty()) {
+            this.totalUsageCount = 0;
+        } else {
+            this.totalUsageCount = cars.stream()
+                    .mapToInt(Car::getUsageCount)
+                    .sum();
+        }
+    }
 
     @Override
     public boolean equals(Object o) {
