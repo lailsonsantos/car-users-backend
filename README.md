@@ -4,6 +4,17 @@ API RESTful para gerenciamento de usuários e carros. Desenvolvida com Spring Bo
 
 ---
 
+## Funcionalidades
+
+- **Autenticação e gerenciamento de usuários:** Cadastro, atualização, remoção e consulta de usuários.
+- **Gerenciamento de carros:** Cada usuário pode cadastrar, atualizar, consultar e remover seus carros.
+- **DTOs para Requests e Responses:** Os Controllers agora recebem _requests_ via DTO e retornam _responses_ via DTO.
+- **Validações customizadas e exceções padronizadas:** Erros (como token não enviado, token expirado, campos inválidos ou ausentes, placa duplicada, etc.) são tratados via exceções customizadas com códigos e mensagens definidos.
+- **Testes unitários 70% de cobertura:** Os métodos possuem testes unitários utilizando JUnit e Mockito.
+- **Documentação via Javadoc:** Classes e métodos estão documentados com Javadoc.
+
+---
+
 ## 📚 Estórias de Usuário (Scrum)
 
 1. Eu, como usuário, desejo me autenticar com login e senha, recebendo um token JWT.
