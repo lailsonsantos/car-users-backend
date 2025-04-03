@@ -51,7 +51,7 @@ public class AuthController {
     @PostMapping("/signin")
     public ResponseEntity<?> authenticateUser(@RequestBody LoginRequest loginRequest) {
         try {
-            // Tenta autenticar com base no login e password
+            // Autentica o usuário
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
                             loginRequest.getLogin(),
@@ -59,19 +59,19 @@ public class AuthController {
                     )
             );
 
-            // Define a autenticação no contexto de segurança
             SecurityContextHolder.getContext().setAuthentication(authentication);
 
-            // Gera o token JWT
-            String token = jwtUtil.generateToken(loginRequest.getLogin());
-
-            // Atualiza o lastLogin do usuário
+            // Recupera o usuário pelo login
             UserEntity user = usuarioRepository.findByLogin(loginRequest.getLogin())
                     .orElseThrow(() -> new UserException(UserErrorCode.INVALID_LOGIN_OR_PASSWORD));
+
+            // Gera o token passando o username e o id do usuário
+            String token = jwtUtil.generateToken(user.getLogin(), user.getId());
+
+            // Atualiza o lastLogin do usuário
             user.setLastLogin(LocalDateTime.now());
             usuarioRepository.save(user);
 
-            // Retorna o token no corpo da resposta
             Map<String, Object> responseBody = new HashMap<>();
             responseBody.put("token", token);
             return ResponseEntity.ok(responseBody);
