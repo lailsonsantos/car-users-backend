@@ -1,6 +1,7 @@
 package com.pitang.car_users_backend.Mapper;
 
 import com.pitang.car_users_backend.dto.UserRequest;
+import com.pitang.car_users_backend.dto.UserRequestUpdate;
 import com.pitang.car_users_backend.dto.UserResponse;
 import com.pitang.car_users_backend.model.UserEntity;
 
@@ -25,7 +26,22 @@ public class UserMapper {
         user.setLogin(request.getLogin());
         user.setPassword(request.getPassword());
         user.setPhone(request.getPhone());
-        user.setCars(request.getCars());
+        user.setCars(CarMapper.toEntity(request.getCars()));
+        return user;
+    }
+
+    /**
+     * Converte UserRequestUpdate para UserEntity.
+     * @param request o objeto de requisição
+     * @return a entidade de usuário
+     */
+    public static UserEntity toEntity(UserRequestUpdate request) {
+        UserEntity user = new UserEntity();
+        user.setFirstName(request.getFirstName());
+        user.setLastName(request.getLastName());
+        user.setEmail(request.getEmail());
+        user.setLogin(request.getLogin());
+        user.setPhone(request.getPhone());
         return user;
     }
 

@@ -9,6 +9,7 @@ import com.pitang.car_users_backend.model.Car;
 import com.pitang.car_users_backend.model.UserEntity;
 import com.pitang.car_users_backend.service.CarService;
 import com.pitang.car_users_backend.service.UserService;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -38,7 +39,7 @@ public class CarController {
      * @return a lista de carros do usuário
      */
     @GetMapping
-    public ResponseEntity<List<CarResponse>> getAll(@RequestParam(required = false) Long userId) {
+    public ResponseEntity<List<CarResponse>> getAll(@RequestParam Long userId) {
         validateUser(userId);
         List<Car> cars = service.getCarsByLoggedUser(userId);
         List<CarResponse> response = cars.stream().map(CarMapper::toResponse).collect(Collectors.toList());
@@ -52,7 +53,7 @@ public class CarController {
      * @return o objeto de resposta do carro
      */
     @GetMapping("/{id}")
-    public ResponseEntity<CarResponse> getById(@PathVariable Long id, @RequestParam(required = false) Long userId) {
+    public ResponseEntity<CarResponse> getById(@PathVariable Long id, @RequestParam Long userId) {
         validateUser(userId);
         Car car = service.getCarUserById(id);
         return ResponseEntity.ok(CarMapper.toResponse(car));
@@ -65,7 +66,8 @@ public class CarController {
      * @return o objeto de resposta do carro criado
      */
     @PostMapping
-    public ResponseEntity<CarResponse> create(@RequestParam(required = false) Long userId, @RequestBody CarRequest request) {
+    public ResponseEntity<CarResponse> create(@RequestParam Long userId,
+                                              @Valid @RequestBody CarRequest request) {
         validateUser(userId);
         UserEntity user = userService.getUserById(userId);
         Car carEntity = CarMapper.toEntity(request, user);
@@ -81,7 +83,8 @@ public class CarController {
      * @return o objeto de resposta do carro atualizado
      */
     @PutMapping("/{id}")
-    public ResponseEntity<CarResponse> update(@PathVariable Long id, @RequestParam(required = false) Long userId, @RequestBody CarRequest request) {
+    public ResponseEntity<CarResponse> update(@PathVariable Long id, @RequestParam Long userId,
+                                              @Valid @RequestBody CarRequest request) {
         validateUser(userId);
         UserEntity user = userService.getUserById(userId);
         Car carEntity = CarMapper.toEntity(request, user);
@@ -96,7 +99,7 @@ public class CarController {
      * @return resposta sem conteúdo
      */
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id, @RequestParam(required = false) Long userId) {
+    public ResponseEntity<Void> delete(@PathVariable Long id, @RequestParam Long userId) {
         validateUser(userId);
         service.deleteCar(id);
         return ResponseEntity.noContent().build();
@@ -139,7 +142,7 @@ public class CarController {
      * @return a lista ordenada de carros
      */
     @GetMapping("/ordered")
-    public ResponseEntity<List<CarResponse>> getCarsOrderedByUsage(@RequestParam(required = false) Long userId) {
+    public ResponseEntity<List<CarResponse>> getCarsOrderedByUsage(@RequestParam Long userId) {
         validateUser(userId);
         List<Car> cars = service.getCarsByLoggedUser(userId);
         List<CarResponse> ordered = cars.stream()

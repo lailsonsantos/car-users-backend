@@ -5,6 +5,9 @@ import com.pitang.car_users_backend.dto.CarResponse;
 import com.pitang.car_users_backend.model.Car;
 import com.pitang.car_users_backend.model.UserEntity;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 /**
  * Classe utilitária para conversão entre Car e seus DTOs.
  */
@@ -16,13 +19,51 @@ public class CarMapper {
      * @return a entidade de carro
      */
     public static Car toEntity(CarRequest request, UserEntity user) {
+        if (request == null) {
+            return null;
+        }
         Car car = new Car();
         car.setYear(request.getYear());
         car.setLicensePlate(request.getLicensePlate());
         car.setModel(request.getModel());
         car.setColor(request.getColor());
+        car.setUsageCount(request.getUsageCount());
+        car.setPhotoUrl(request.getPhotoUrl());
         car.setUser(user);
         return car;
+    }
+
+    /**
+     * Converte CarRequest para Car, sem o usuário.
+     * @param request o objeto de requisição
+     * @return a entidade de carro
+     */
+    public static Car toEntity(CarRequest request) {
+        if (request == null) {
+            return null;
+        }
+        Car car = new Car();
+        car.setYear(request.getYear());
+        car.setLicensePlate(request.getLicensePlate());
+        car.setModel(request.getModel());
+        car.setColor(request.getColor());
+        car.setUsageCount(request.getUsageCount());
+        car.setPhotoUrl(request.getPhotoUrl());
+        return car;
+    }
+
+    /**
+     * Converte List<CarRequest> para List<Car>.
+     * @param requests o objeto de requisição
+     * @return list do objeto de resposta
+     */
+    public static List<Car> toEntity(List<CarRequest> requests) {
+        if (requests == null) {
+            return null;
+        }
+        return requests.stream()
+                .map(CarMapper::toEntity)
+                .collect(Collectors.toList());
     }
 
     /**
@@ -41,4 +82,5 @@ public class CarMapper {
         response.setPhotoUrl(car.getPhotoUrl());
         return response;
     }
+
 }

@@ -2,11 +2,13 @@ package com.pitang.car_users_backend.controller;
 
 import com.pitang.car_users_backend.Mapper.UserMapper;
 import com.pitang.car_users_backend.dto.UserRequest;
+import com.pitang.car_users_backend.dto.UserRequestUpdate;
 import com.pitang.car_users_backend.dto.UserResponse;
 import com.pitang.car_users_backend.exception.UserErrorCode;
 import com.pitang.car_users_backend.exception.UserException;
 import com.pitang.car_users_backend.model.UserEntity;
 import com.pitang.car_users_backend.service.UserService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -78,7 +80,7 @@ public class UserController {
      * @return UserResponse com o usuário criado
      */
     @PostMapping
-    public ResponseEntity<UserResponse> create(@RequestBody UserRequest request) {
+    public ResponseEntity<UserResponse> create(@Valid @RequestBody UserRequest request) {
         UserEntity userEntity = UserMapper.toEntity(request);
         UserEntity created = service.createUser(userEntity);
         return ResponseEntity.status(HttpStatus.CREATED).body(UserMapper.toResponse(created));
@@ -91,7 +93,7 @@ public class UserController {
      * @return UserResponse com os dados do usuário atualizado
      */
     @PutMapping("/{id}")
-    public ResponseEntity<UserResponse> update(@PathVariable Long id, @RequestBody UserRequest updatedUser) {
+    public ResponseEntity<UserResponse> update(@PathVariable Long id, @Valid @RequestBody UserRequestUpdate updatedUser) {
         UserEntity userEntity = UserMapper.toEntity(updatedUser);
         UserEntity updated = service.updateUser(id, userEntity);
         return ResponseEntity.ok(UserMapper.toResponse(updated));

@@ -57,4 +57,5 @@ public class GlobalExceptionHandler {
                         "errorCode", ex.getCode()
                 ));
     }
+
 }
