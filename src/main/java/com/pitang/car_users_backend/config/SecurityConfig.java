@@ -9,9 +9,9 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -87,32 +87,18 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
+                .cors(Customizer.withDefaults())
                 .csrf(AbstractHttpConfigurer::disable)
                 .exceptionHandling(exception -> exception.authenticationEntryPoint(jwtAuthEntryPoint))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> {
-
-                    // ROTAS PÚBLICAS DA SUA APLICAÇÃO
-                    auth.requestMatchers("/swagger-ui.html").permitAll();
-                    auth.requestMatchers("/swagger-ui/**").permitAll();
-                    auth.requestMatchers("/v3/api-docs/**").permitAll();
-                    auth.requestMatchers("/v3/api-docs.yaml").permitAll();
-                    auth.requestMatchers("/swagger-resources/**").permitAll();
-                    auth.requestMatchers("/webjars/**").permitAll();
-                    auth.requestMatchers("/h2-console/**").permitAll();
-                    auth.requestMatchers("/api/signin").permitAll();
-                    auth.requestMatchers("/api/users").permitAll();
-                    auth.requestMatchers("/api/users/**").permitAll();
-
-                    // ROTAS PRIVADAS (AUTENTICAÇÃO REQUERIDA)
-                    auth.requestMatchers("/api/me").authenticated();
-                    auth.requestMatchers("/api/cars/**").authenticated();
-
-                    // Qualquer outra rota não especificada será autenticada
+                    auth.requestMatchers("/api/users", "/api/users/**", "/api/signin").permitAll();
+                    auth.requestMatchers("/swagger-ui.html", "/swagger-ui.index.html", "/swagger-ui/**",
+                            "/swagger-resources/**", "/v3/api-docs/**", "/v3/api-docs.yaml").permitAll();
+                    auth.requestMatchers("/h2-console/**", "/webjars/**").permitAll();
                     auth.anyRequest().authenticated();
                 });
 
-        // Insere o filtro de JWT antes do filtro de autenticação padrão
         http.addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

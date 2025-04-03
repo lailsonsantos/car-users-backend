@@ -14,9 +14,11 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
+import org.springframework.util.AntPathMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.List;
 
 /**
  * Filtro que intercepta requisições uma única vez (OncePerRequestFilter) para
@@ -27,11 +29,31 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
     private static final Logger logger = LoggerFactory.getLogger(JwtAuthFilter.class);
 
+    private static final List<String> PUBLIC_PATHS = List.of(
+            "/api/users",
+            "/api/users/**",
+            "/api/signin",
+            "/swagger-ui.html",
+            "/swagger-ui.index.html",
+            "/swagger-ui/**",
+            "/swagger-resources/**",
+            "/v3/api-docs/**",
+            "/v3/api-docs.yaml",
+            "/h2-console/**",
+            "/webjars/**"
+    );
+
+    private final AntPathMatcher pathMatcher = new AntPathMatcher();
+
     @Autowired
     private JwtUtil jwtUtil;
 
     @Autowired
     private CustomUserDetailsService customUserDetailsService;
+
+    private boolean isPublicPath(String path) {
+        return PUBLIC_PATHS.stream().anyMatch(p -> pathMatcher.match(p, path));
+    }
 
     /**
      * Verifica se existe token JWT no header "Authorization".
@@ -47,6 +69,17 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                                     @NonNull HttpServletResponse response,
                                     @NonNull FilterChain filterChain)
             throws ServletException, IOException {
+
+        if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+        String path = request.getRequestURI();
+        if (isPublicPath(path)) {
+            filterChain.doFilter(request, response);
+            return;
+        }
 
         // Obtém o header de autorização
         String header = request.getHeader("Authorization");
