@@ -10,13 +10,22 @@ import com.pitang.car_users_backend.model.UserEntity;
 import com.pitang.car_users_backend.service.CarService;
 import com.pitang.car_users_backend.service.UserService;
 import jakarta.validation.Valid;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Controller para gerenciamento de carros.
@@ -106,34 +115,90 @@ public class CarController {
     }
 
     /**
+     * Retorna a foto de um carro.
+     * @param id o id do carro
+     * @return imagem do carro
+     */
+    @GetMapping("/{id}/photo")
+    public ResponseEntity<Resource> getCarPhoto(@PathVariable Long id) {
+        Car car = service.getCarById(id);
+        if (car == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        try {
+            // Procurar o arquivo com qualquer extensão
+            Path uploadPath = Paths.get("uploads/cars").toAbsolutePath().normalize();
+
+            // Listar todos os arquivos que começam com "car_[id]"
+            try (Stream<Path> paths = Files.list(uploadPath)) {
+                Optional<Path> photoPath = paths
+                        .filter(path -> path.getFileName().toString().startsWith("car_" + id + "."))
+                        .findFirst();
+
+                if (photoPath.isPresent()) {
+                    Resource resource = new UrlResource(photoPath.get().toUri());
+
+                    if (resource.exists() && resource.isReadable()) {
+                        // Determinar o content type com base na extensão
+                        String contentType = Files.probeContentType(photoPath.get());
+                        if (contentType == null) {
+                            contentType = "application/octet-stream";
+                        }
+
+                        return ResponseEntity.ok()
+                                .contentType(MediaType.parseMediaType(contentType))
+                                .body(resource);
+                    }
+                }
+            }
+
+            return ResponseEntity.notFound().build();
+        } catch (Exception e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    /**
      * Faz o upload da foto de um carro.
      * @param id o id do carro
      * @param file o arquivo da foto
      * @return mensagem de sucesso
      */
     @PostMapping("/{id}/photo")
-    public ResponseEntity<String> uploadCarPhoto(@PathVariable Long id, @RequestParam("file") MultipartFile file) {
+    public ResponseEntity<CarResponse> uploadCarPhoto(
+            @PathVariable Long id,
+            @RequestParam("file") MultipartFile file) throws IOException {
 
-        String relativePath = "uploads/cars/car_" + id + "_" + file.getOriginalFilename();
-        String absolutePath = new java.io.File(relativePath).getAbsolutePath();
-
-        try {
-            java.io.File directory = new java.io.File("uploads/cars");
-            if (!directory.exists()) {
-                directory.mkdirs();
-            }
-
-            java.io.File destFile = new java.io.File(absolutePath);
-            file.transferTo(destFile);
-
-            Car car = service.getCarById(id);
-            car.setPhotoUrl(relativePath);
-            service.updateCar(id, car);
-
-            return ResponseEntity.ok("Foto enviada com sucesso: " + relativePath);
-        } catch (Exception e) {
-            throw new CarException(CarErrorCode.UPLOAD_FAILED);
+        // Verificar se o arquivo é uma imagem
+        if (file.isEmpty() || file.getContentType() == null || !file.getContentType().startsWith("image/")) {
+            throw new CarException(CarErrorCode.INVALID_PHOTO);
         }
+
+        // Obter a extensão do arquivo original
+        String originalFilename = file.getOriginalFilename();
+        String fileExtension = "";
+
+        if (originalFilename != null && originalFilename.contains(".")) {
+            fileExtension = originalFilename.substring(originalFilename.lastIndexOf("."));
+        }
+
+        // Criar diretório se não existir
+        String uploadDir = "uploads/cars";
+        Path uploadPath = Paths.get(uploadDir).toAbsolutePath().normalize();
+        Files.createDirectories(uploadPath);
+
+        // Gerar nome do arquivo com a extensão original
+        String fileName = "car_" + id + fileExtension;
+        Path filePath = uploadPath.resolve(fileName);
+
+        // Salvar arquivo
+        file.transferTo(filePath);
+
+        // Atualizar apenas a photoUrl do carro
+        Car updatedCar = service.updateCarPhoto(id, "/api/cars/" + id + "/photo");
+
+        return ResponseEntity.ok(CarMapper.toResponse(updatedCar));
     }
 
     /**

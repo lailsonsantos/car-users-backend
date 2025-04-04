@@ -28,5 +28,4 @@ public class CarRequest {
 
     private String photoUrl;
 
-
 }

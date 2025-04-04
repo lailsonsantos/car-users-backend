@@ -23,4 +23,5 @@ public class UserResponse {
     private List<CarResponse> cars;
     private LocalDateTime createdAt;
     private LocalDateTime lastLogin;
+    private String photoUrl;
 }

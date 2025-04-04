@@ -92,7 +92,7 @@ public class SecurityConfig {
                 .exceptionHandling(exception -> exception.authenticationEntryPoint(jwtAuthEntryPoint))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> {
-                    auth.requestMatchers("/api/users", "/api/users/**", "/api/signin").permitAll();
+                    auth.requestMatchers("/api/users", "/api/users/**", "/api/signin", "/api/cars/*/photo").permitAll();
                     auth.requestMatchers("/swagger-ui.html", "/swagger-ui.index.html", "/swagger-ui/**",
                             "/swagger-resources/**", "/v3/api-docs/**", "/v3/api-docs.yaml").permitAll();
                     auth.requestMatchers("/h2-console/**", "/webjars/**").permitAll();

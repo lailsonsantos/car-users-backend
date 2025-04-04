@@ -41,4 +41,8 @@ public class UserRequest {
     @NotNull(message = "A lista de carros não pode ser nula")
     @NotEmpty(message = "Deve haver ao menos um carro")
     private List<CarRequest> cars;
+
+    private String photoUrl;
+
+    private int totalUsageCount;
 }

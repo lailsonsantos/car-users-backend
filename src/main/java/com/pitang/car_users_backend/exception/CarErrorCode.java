@@ -13,7 +13,8 @@ public enum CarErrorCode {
     INVALID_FIELDS(4, "Invalid fields"),
     MISSING_FIELDS(5, "Missing fields"),
     CAR_NOT_FOUND(6, "Car not found"),
-    UPLOAD_FAILED(7, "Failed to upload car photo");
+    UPLOAD_FAILED(7, "Failed to upload car photo"),
+    INVALID_PHOTO(8, "Invalid photo");
 
     /**
      * -- GETTER --

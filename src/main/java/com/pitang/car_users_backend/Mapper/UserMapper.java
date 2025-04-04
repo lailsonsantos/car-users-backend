@@ -26,6 +26,7 @@ public class UserMapper {
         user.setLogin(request.getLogin());
         user.setPassword(request.getPassword());
         user.setPhone(request.getPhone());
+        user.setPhotoUrl(request.getPhotoUrl());
         user.setCars(CarMapper.toEntity(request.getCars()));
         return user;
     }
@@ -61,6 +62,7 @@ public class UserMapper {
         response.setPhone(user.getPhone());
         response.setCreatedAt(user.getCreatedAt());
         response.setLastLogin(user.getLastLogin());
+        response.setPhotoUrl(user.getPhotoUrl());
         if (user.getCars() != null) {
             response.setCars(user.getCars().stream().map(CarMapper::toResponse).collect(Collectors.toList()));
         }

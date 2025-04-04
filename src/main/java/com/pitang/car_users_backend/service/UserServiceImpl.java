@@ -102,6 +102,15 @@ public class UserServiceImpl implements UserService {
         return repository.existsByLogin(login);
     }
 
+    @Override
+    public UserEntity updateUserPhoto(Long id, String photoUrl) {
+        UserEntity existingUser = repository.findById(id)
+                .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
+
+        existingUser.setPhotoUrl(photoUrl);
+        return repository.save(existingUser);
+    }
+
     /**
      * Valida campos obrigatórios e duplicidades (email/login) para criação de usuário.
      * @param user usuário a ser validado

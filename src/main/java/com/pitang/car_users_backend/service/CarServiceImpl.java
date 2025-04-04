@@ -63,6 +63,15 @@ public class CarServiceImpl implements CarService {
     }
 
     @Override
+    public Car updateCarPhoto(Long id, String photoUrl) {
+        Car car = repository.findById(id)
+                .orElseThrow(() -> new CarException(CarErrorCode.CAR_NOT_FOUND));
+
+        car.setPhotoUrl(photoUrl);
+        return repository.save(car);
+    }
+
+    @Override
     public void deleteCar(Long id) {
         if (!repository.existsById(id)) {
             throw new CarException(CarErrorCode.CAR_NOT_FOUND);

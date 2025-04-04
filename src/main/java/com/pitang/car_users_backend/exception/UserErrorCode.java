@@ -15,7 +15,8 @@ public enum UserErrorCode {
     USER_NOT_FOUND(6, "User not found"),
     UPLOAD_FAILED(7, "Failed to upload user photo"),
     UNAUTHORIZED(8, "Unauthorized"),
-    UNAUTHORIZED_SESSION(9, "Unauthorized - invalid session");
+    UNAUTHORIZED_SESSION(9, "Unauthorized - invalid session"),
+    INVALID_PHOTO(10, "Invalid photo");
 
     /**
      * -- GETTER --

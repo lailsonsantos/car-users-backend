@@ -56,4 +56,12 @@ public interface UserService {
      * @return true se existir, false caso contrário
      */
     boolean loginExists(String login);
+
+    /**
+     *
+     * @param id ID do usuário
+     * @param photoUrl photoUrl do usuário
+     * @return usuário atualizado com a imagem
+     */
+    UserEntity updateUserPhoto(Long id, String photoUrl);
 }

@@ -63,4 +63,12 @@ public interface CarService {
      * @return carro encontrado
      */
     Car getCarUserById(Long id);
+
+    /**
+     * Atualiza a imagem do carro
+     * @param id ID do carro
+     * @param photoUrl photoUrl do carro
+     * @return o carro atualizado com a imagem
+     */
+    Car updateCarPhoto(Long id, String photoUrl);
 }
