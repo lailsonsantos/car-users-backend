@@ -8,12 +8,20 @@ import com.pitang.car_users_backend.util.CarValidationUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+import org.springframework.core.io.Resource;
+import org.springframework.mock.web.MockMultipartFile;
 
-import java.util.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 /**
  * Classe de teste unitário para a implementação de {@link CarServiceImpl}.
@@ -302,4 +310,94 @@ class CarServiceImplTest {
         boolean exists = carService.licensePlateExists("DOESNT-9999");
         assertFalse(exists, "Deveria retornar false para placa inexistente");
     }
+
+    /**
+     * Testa sucesso no retorno da foto não encontrada
+     * @throws Exception
+     */
+    @Test
+    void testGetCarPhotoResource_Success() throws Exception {
+        Long carId = 1L;
+        Car car = new Car();
+        car.setId(carId);
+
+        when(repository.findById(carId)).thenReturn(Optional.of(car));
+
+        Path uploadPath = Paths.get("uploads/cars").toAbsolutePath().normalize();
+        Files.createDirectories(uploadPath);
+        Path photoPath = uploadPath.resolve("car_" + carId + ".jpg");
+        Files.write(photoPath, "imagem fake".getBytes());
+
+        Resource resource = carService.getCarPhotoResource(carId);
+        assertNotNull(resource, "O recurso da imagem não deveria ser nulo");
+        assertTrue(resource.exists(), "O recurso deveria existir");
+        assertTrue(resource.isReadable(), "O recurso deveria ser legível");
+
+        Files.deleteIfExists(photoPath);
+    }
+
+    /**
+     * Testa falha no retorno da foto não encontrada
+     */
+    @Test
+    void testGetCarPhotoResource_NotFound() {
+        when(repository.findById(99L)).thenReturn(Optional.empty());
+        assertThrows(CarException.class, () -> carService.getCarPhotoResource(99L));
+    }
+
+    /**
+     * Testa sucesso na importação da foto
+     * @throws Exception
+     */
+    @Test
+    void testUploadCarPhoto_Success() throws Exception {
+        Long carId = 2L;
+        Car car = new Car();
+        car.setId(carId);
+
+        when(repository.findById(carId)).thenReturn(Optional.of(car));
+        when(repository.save(any(Car.class))).thenReturn(car);
+
+        MockMultipartFile file = new MockMultipartFile(
+                "file", "carro.jpg", "image/jpeg", "imagem de carro".getBytes()
+        );
+
+        Car result = carService.uploadCarPhoto(carId, file);
+
+        assertNotNull(result, "O carro retornado não deveria ser nulo");
+        assertEquals("/api/cars/" + carId + "/photo", result.getPhotoUrl(),
+                "A URL da foto deveria ser atualizada corretamente");
+
+        Path uploadPath = Paths.get("uploads/cars").toAbsolutePath().normalize();
+        Files.deleteIfExists(uploadPath.resolve("car_" + carId + ".jpg"));
+    }
+
+    /**
+     * Testa falha na importação da foto tipo arquivo
+     */
+    @Test
+    void testUploadCarPhoto_InvalidFileType() {
+        MockMultipartFile file = new MockMultipartFile(
+                "file", "documento.txt", "text/plain", "texto inválido".getBytes()
+        );
+
+        CarException ex = assertThrows(CarException.class, () -> carService.uploadCarPhoto(3L, file));
+        assertEquals(CarErrorCode.INVALID_PHOTO.getMessage(), ex.getMessage(),
+                "Deveria lançar erro para tipo de arquivo inválido");
+    }
+
+    /**
+     * Testa falha na importação da foto
+     */
+    @Test
+    void testUploadCarPhoto_EmptyFile() {
+        MockMultipartFile file = new MockMultipartFile(
+                "file", "carro.jpg", "image/jpeg", new byte[0]
+        );
+
+        CarException ex = assertThrows(CarException.class, () -> carService.uploadCarPhoto(4L, file));
+        assertEquals(CarErrorCode.INVALID_PHOTO.getMessage(), ex.getMessage(),
+                "Deveria lançar erro para arquivo vazio");
+    }
+
 }

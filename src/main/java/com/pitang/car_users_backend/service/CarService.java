@@ -1,6 +1,8 @@
 package com.pitang.car_users_backend.service;
 
 import com.pitang.car_users_backend.model.Car;
+import org.springframework.core.io.Resource;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -71,4 +73,19 @@ public interface CarService {
      * @return o carro atualizado com a imagem
      */
     Car updateCarPhoto(Long id, String photoUrl);
+
+    /**
+     * Retorna a foto do carro
+     * @param id ID do carro
+     * @return a foto do carro
+     */
+    Resource getCarPhotoResource(Long id);
+
+    /**
+     * Realizar o upload da foto do carro
+     * @param id ID do carro
+     * @param file da foto do carro
+     * @return o carro atualizado com a imagem
+     */
+    Car uploadCarPhoto(Long id, MultipartFile file);
 }

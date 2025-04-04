@@ -1,27 +1,19 @@
 package com.pitang.car_users_backend.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.pitang.car_users_backend.exception.UserErrorCode;
-import com.pitang.car_users_backend.exception.UserException;
 import com.pitang.car_users_backend.model.UserEntity;
 import com.pitang.car_users_backend.service.UserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.http.MediaType;
-import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.doThrow;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -119,27 +111,5 @@ class UserControllerTest {
                         .content(objectMapper.writeValueAsString(requestEntity)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.login").value("updatedUser"));
-    }
-
-    /**
-     * Teste de upload de foto com falha (lança exceção).
-     */
-    @Test
-    void testUploadUserPhoto_Failed() throws Exception {
-        MultipartFile file = Mockito.mock(MultipartFile.class);
-
-        when(file.isEmpty()).thenReturn(false);
-        when(file.getContentType()).thenReturn("image/jpeg");
-        when(file.getOriginalFilename()).thenReturn("test.jpg");
-        when(userService.updateUserPhoto(eq(10L), anyString()))
-                .thenReturn(new UserEntity());
-
-        doThrow(new IOException("Simulated error")).when(file).transferTo(any(File.class));
-
-        UserException ex = assertThrows(UserException.class, () -> {
-            userController.uploadUserPhoto(10L, file);
-        });
-
-        assertEquals(UserErrorCode.UPLOAD_FAILED.getMessage(), ex.getMessage());
     }
 }

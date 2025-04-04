@@ -5,13 +5,25 @@ import com.pitang.car_users_backend.exception.UserException;
 import com.pitang.car_users_backend.model.Car;
 import com.pitang.car_users_backend.model.UserEntity;
 import com.pitang.car_users_backend.repository.UserRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Stream;
 
 import static com.pitang.car_users_backend.util.UserValidationUtil.isValid;
 import static com.pitang.car_users_backend.util.UserValidationUtil.isValidUpdate;
@@ -22,6 +34,8 @@ import static com.pitang.car_users_backend.util.UserValidationUtil.isValidUpdate
  */
 @Service
 public class UserServiceImpl implements UserService {
+
+    private static final Logger logger = LoggerFactory.getLogger(UserServiceImpl.class);
 
     private final UserRepository repository;
     private final PasswordEncoder passwordEncoder;
@@ -187,6 +201,74 @@ public class UserServiceImpl implements UserService {
         if (loginExists(user.getLogin())) {
             throw new UserException(UserErrorCode.LOGIN_ALREADY_EXISTS);
         }
+    }
+
+    @Override
+    public Resource getUserPhotoResource(Long id) {
+        UserEntity user = getUserById(id);
+        if (user == null) {
+            return null;
+        }
+        try {
+            Path uploadPath = Paths.get("uploads/users").toAbsolutePath().normalize();
+            try (Stream<Path> paths = Files.list(uploadPath)) {
+                Optional<Path> photoPath = paths
+                        .filter(path -> path.getFileName().toString().startsWith("user_" + id + "."))
+                        .findFirst();
+                if (photoPath.isPresent()) {
+                    Resource resource = new UrlResource(photoPath.get().toUri());
+                    if (resource.exists() && resource.isReadable()) {
+                        return resource;
+                    }
+                }
+            }
+        } catch (Exception ex) {
+            logger.error("Erro ao retornar a foto do usuário: {}", ex.getMessage());
+        }
+        return null;
+    }
+
+    @Override
+    public UserEntity uploadUserPhoto(Long id, MultipartFile file) {
+        // Validação de imagem
+        if (file.isEmpty() || (file.getContentType() != null && !file.getContentType().startsWith("image/"))) {
+            throw new UserException(UserErrorCode.INVALID_PHOTO);
+        }
+
+        String originalFilename = file.getOriginalFilename();
+        String fileExtension = "";
+        if (originalFilename != null && originalFilename.contains(".")) {
+            fileExtension = originalFilename.substring(originalFilename.lastIndexOf("."));
+        }
+
+        String uploadDir = "uploads/users";
+        Path uploadPath = Paths.get(uploadDir).toAbsolutePath().normalize();
+        try {
+            Files.createDirectories(uploadPath);
+        } catch (IOException e) {
+            throw new UserException(UserErrorCode.UPLOAD_FAILED);
+        }
+
+        String fileName = "user_" + id + fileExtension;
+        Path filePath = uploadPath.resolve(fileName);
+
+        // Limpar arquivos existentes que correspondam a "user_{id}.*"
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(uploadPath, "user_" + id + ".*")) {
+            for (Path existingFile : stream) {
+                Files.delete(existingFile);
+            }
+        } catch (IOException ex) {
+            logger.error("Erro de limpeza dos arquivos: {}", ex.getMessage());
+        }
+
+        try {
+            file.transferTo(filePath.toFile());
+        } catch (IOException e) {
+            throw new UserException(UserErrorCode.UPLOAD_FAILED);
+        }
+
+        // Atualiza apenas a photoUrl do usuário
+        return updateUserPhoto(id, "/api/users/" + id + "/photo");
     }
 
 }

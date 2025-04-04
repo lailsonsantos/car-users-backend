@@ -7,16 +7,22 @@ import com.pitang.car_users_backend.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+import org.springframework.core.io.Resource;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.Optional;
 
 import static com.pitang.car_users_backend.util.UserValidationUtil.isValid;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 /**
  * Testes unitários para {@link UserServiceImpl} (~80% coverage).
@@ -195,4 +201,82 @@ class UserServiceImplTest {
         u.setPassword("123456");
         assertTrue(isValid(u));
     }
+
+    /**
+     * Testa sucesso no retorno da foto não encontrada
+     * @throws Exception
+     */
+    @Test
+    void testGetUserPhotoResource_Success() throws Exception {
+        Long userId = 1L;
+        UserEntity user = new UserEntity();
+        user.setId(userId);
+
+        when(repository.findById(userId)).thenReturn(Optional.of(user));
+
+        Path uploadPath = Paths.get("uploads/users").toAbsolutePath().normalize();
+        Files.createDirectories(uploadPath);
+        Path photoPath = uploadPath.resolve("user_" + userId + ".jpg");
+        Files.write(photoPath, "fake image content".getBytes());
+
+        Resource resource = userService.getUserPhotoResource(userId);
+        assertNotNull(resource);
+        assertTrue(resource.exists());
+
+        Files.deleteIfExists(photoPath);
+    }
+
+    /**
+     * Testa falha no retorno da foto não encontrada
+     */
+    @Test
+    void testGetUserPhotoResource_NotFound() {
+        when(repository.findById(99L)).thenReturn(Optional.empty());
+        assertThrows(UserException.class, () -> userService.getUserPhotoResource(99L));
+    }
+
+    /**
+     * Testa sucesso na importação da foto
+     * @throws Exception
+     */
+    @Test
+    void testUploadUserPhoto_Success() throws Exception {
+        Long userId = 1L;
+        UserEntity user = new UserEntity();
+        user.setId(userId);
+
+        when(repository.findById(userId)).thenReturn(Optional.of(user));
+        when(repository.save(any(UserEntity.class))).thenReturn(user);
+
+        MockMultipartFile file = new MockMultipartFile("file", "photo.jpg", "image/jpeg", "image data".getBytes());
+
+        UserEntity result = userService.uploadUserPhoto(userId, file);
+
+        assertNotNull(result);
+        assertEquals("/api/users/" + userId + "/photo", result.getPhotoUrl());
+
+        Path uploadPath = Paths.get("uploads/users").toAbsolutePath().normalize();
+        Files.deleteIfExists(uploadPath.resolve("user_" + userId + ".jpg"));
+    }
+
+    /**
+     * Testa falha na importação da foto tipo arquivo
+     */
+    @Test
+    void testUploadUserPhoto_InvalidFileType() {
+        MockMultipartFile file = new MockMultipartFile("file", "file.txt", "text/plain", "data".getBytes());
+        UserException ex = assertThrows(UserException.class, () -> userService.uploadUserPhoto(1L, file));
+        assertEquals(UserErrorCode.INVALID_PHOTO.getMessage(), ex.getMessage());
+    }
+
+    /**
+     * Testa falha na importação da foto
+     */
+    @Test
+    void testUploadUserPhoto_EmptyFile() {
+        MockMultipartFile file = new MockMultipartFile("file", "empty.jpg", "image/jpeg", new byte[0]);
+        UserException ex = assertThrows(UserException.class, () -> userService.uploadUserPhoto(1L, file));
+        assertEquals(UserErrorCode.INVALID_PHOTO.getMessage(), ex.getMessage());
+    }
+
 }

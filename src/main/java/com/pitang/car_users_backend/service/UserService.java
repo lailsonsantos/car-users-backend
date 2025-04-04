@@ -1,6 +1,8 @@
 package com.pitang.car_users_backend.service;
 
 import com.pitang.car_users_backend.model.UserEntity;
+import org.springframework.core.io.Resource;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -64,4 +66,19 @@ public interface UserService {
      * @return usuário atualizado com a imagem
      */
     UserEntity updateUserPhoto(Long id, String photoUrl);
+
+    /**
+     * Retorna a foto do usuário
+     * @param id ID do usuário
+     * @return a foto do usuário
+     */
+    Resource getUserPhotoResource(Long id);
+
+    /**
+     * Realizar o upload da foto do usuário
+     * @param id ID do usuário
+     * @param file a foto do usuário
+     * @return usuário atualizado com a imagem
+     */
+    UserEntity uploadUserPhoto(Long id, MultipartFile file);
 }

@@ -1,32 +1,16 @@
 package com.pitang.car_users_backend.controller;
 
 import com.pitang.car_users_backend.Mapper.UserMapper;
-import com.pitang.car_users_backend.dto.UserRequest;
-import com.pitang.car_users_backend.dto.UserRequestUpdate;
 import com.pitang.car_users_backend.dto.UserResponse;
 import com.pitang.car_users_backend.exception.UserErrorCode;
 import com.pitang.car_users_backend.exception.UserException;
 import com.pitang.car_users_backend.model.UserEntity;
 import com.pitang.car_users_backend.service.UserService;
-import jakarta.validation.Valid;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.UrlResource;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-
-import java.io.IOException;
-import java.nio.file.DirectoryStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 /**
  * Controlador responsável pelas operações relacionadas ao Usuário logado.

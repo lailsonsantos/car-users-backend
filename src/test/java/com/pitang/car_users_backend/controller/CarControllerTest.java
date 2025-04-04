@@ -2,8 +2,6 @@ package com.pitang.car_users_backend.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pitang.car_users_backend.dto.CarRequest;
-import com.pitang.car_users_backend.exception.CarErrorCode;
-import com.pitang.car_users_backend.exception.CarException;
 import com.pitang.car_users_backend.model.Car;
 import com.pitang.car_users_backend.service.CarService;
 import com.pitang.car_users_backend.service.UserService;
@@ -11,19 +9,13 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.http.MediaType;
-import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.Collections;
-import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.doThrow;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
