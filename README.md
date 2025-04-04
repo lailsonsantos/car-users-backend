@@ -1,6 +1,6 @@
 # Car Users API
 
-API RESTful para gerenciamento de usuários e carros. Desenvolvida com Spring Boot, documentada com Swagger e analisada com SonarQube. Artefatos são publicados via Nexus e integrados via Jenkins CI/CD.
+API RESTful para gerenciamento de usuários e carros. Desenvolvida com Spring Boot, documentada com Swagger e analisada com SonarQube. Artefatos são integrados via Jenkins CI/CD.
 
 ---
 
@@ -24,7 +24,7 @@ API RESTful para gerenciamento de usuários e carros. Desenvolvida com Spring Bo
 5. Eu, como administrador, desejo listar, buscar, atualizar e remover usuários.
 6. Eu, como desenvolvedor, desejo visualizar a documentação via Swagger.
 7. Eu, como desenvolvedor, desejo garantir qualidade de código via SonarQube.
-8. Eu, como devops, desejo automatizar o build/teste/deploy via Jenkins e Nexus.
+8. Eu, como devops, desejo automatizar o build/teste/deploy via Jenkins.
 
 ---
 
@@ -35,9 +35,7 @@ API RESTful para gerenciamento de usuários e carros. Desenvolvida com Spring Bo
 - **Spring Security** para proteção de endpoints
 - **Swagger (springdoc-openapi)** para documentação
 - **SonarQube** para análise de código
-- **Nexus** como repositório de artefatos
 - **Jenkins** com pipeline automatizado
-- **Design Pattern: Strategy** aplicado para filtragem de usuários
 
 ---
 
@@ -51,7 +49,7 @@ API RESTful para gerenciamento de usuários e carros. Desenvolvida com Spring Bo
 ### Comandos:
 
 ```bash
-# Subir Jenkins, SonarQube e Nexus
+# Subir Jenkins e SonarQube
 docker compose up -d
 
 # Rodar localmente (em outra aba)
@@ -138,7 +136,6 @@ http://localhost:8080/swagger-ui.html
 Jenkinsfile pronto com:
 - Build e testes
 - Análise SonarQube
-- Deploy no Nexus
 
 ---
 

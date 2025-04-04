@@ -1,0 +1,20 @@
+sonar.projectKey=car-users-backend
+sonar.projectName=Car Users Backend
+sonar.projectVersion=1.0
+
+# Diretórios do código-fonte
+sonar.sources=src/main/java
+sonar.tests=src/test/java
+sonar.java.binaries=target/classes
+
+# Exclui arquivos gerados ou desnecessários
+sonar.exclusions=**/config/**, **/*Application.java
+
+# URL do SonarQube local
+sonar.host.url=http://localhost:9000
+
+# Codificação do projeto
+sonar.sourceEncoding=UTF-8
+
+# Para executar descomente abaixo. É necessário gerar o token em http://localhost:9000/account/security
+# ./mvnw sonar:sonar -Dsonar.login=SEU_TOKEN_DO_SONAR
