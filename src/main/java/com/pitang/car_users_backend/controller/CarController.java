@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -170,12 +171,10 @@ public class CarController {
             @PathVariable Long id,
             @RequestParam("file") MultipartFile file) throws IOException {
 
-        // Verificar se o arquivo é uma imagem
-        if (file.isEmpty() || file.getContentType() == null || !file.getContentType().startsWith("image/")) {
+        if (file.isEmpty() || (file.getContentType() != null && !file.getContentType().startsWith("image/"))) {
             throw new CarException(CarErrorCode.INVALID_PHOTO);
         }
 
-        // Obter a extensão do arquivo original
         String originalFilename = file.getOriginalFilename();
         String fileExtension = "";
 
@@ -183,19 +182,21 @@ public class CarController {
             fileExtension = originalFilename.substring(originalFilename.lastIndexOf("."));
         }
 
-        // Criar diretório se não existir
         String uploadDir = "uploads/cars";
         Path uploadPath = Paths.get(uploadDir).toAbsolutePath().normalize();
         Files.createDirectories(uploadPath);
 
-        // Gerar nome do arquivo com a extensão original
         String fileName = "car_" + id + fileExtension;
         Path filePath = uploadPath.resolve(fileName);
 
-        // Salvar arquivo
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(uploadPath, "user_" + id + ".*")) {
+            for (Path existingFile : stream) {
+                Files.delete(existingFile);
+            }
+        }
+
         file.transferTo(filePath);
 
-        // Atualizar apenas a photoUrl do carro
         Car updatedCar = service.updateCarPhoto(id, "/api/cars/" + id + "/photo");
 
         return ResponseEntity.ok(CarMapper.toResponse(updatedCar));

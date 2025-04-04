@@ -28,7 +28,6 @@ public class CarMapper {
         car.setModel(request.getModel());
         car.setColor(request.getColor());
         car.setUsageCount(request.getUsageCount());
-        car.setPhotoUrl(request.getPhotoUrl());
         car.setUser(user);
         return car;
     }
@@ -43,6 +42,7 @@ public class CarMapper {
             return null;
         }
         Car car = new Car();
+        car.setId(request.getId());
         car.setYear(request.getYear());
         car.setLicensePlate(request.getLicensePlate());
         car.setModel(request.getModel());

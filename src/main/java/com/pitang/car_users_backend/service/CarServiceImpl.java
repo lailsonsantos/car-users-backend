@@ -17,11 +17,9 @@ import java.util.List;
 public class CarServiceImpl implements CarService {
 
     private final CarRepository repository;
-    private final UserService userService;
 
-    public CarServiceImpl(CarRepository repository, UserService userService) {
+    public CarServiceImpl(CarRepository repository) {
         this.repository = repository;
-        this.userService = userService;
     }
 
     @Override
@@ -52,6 +50,10 @@ public class CarServiceImpl implements CarService {
 
         if (!CarValidationUtil.isValid(car)) {
             throw new CarException(CarErrorCode.INVALID_FIELDS);
+        }
+
+        if (car.getPhotoUrl() != null && !car.getPhotoUrl().isEmpty()) {
+            existing.setPhotoUrl(car.getPhotoUrl());
         }
 
         existing.setLicensePlate(car.getLicensePlate());
@@ -95,14 +97,11 @@ public class CarServiceImpl implements CarService {
         Car car = repository.findById(id)
                 .orElseThrow(() -> new CarException(CarErrorCode.CAR_NOT_FOUND));
 
-        // Incrementa o uso do carro
         car.setUsageCount(car.getUsageCount() + 1);
         this.updateCar(id, car);
 
-        // Se o carro tem dono, atualiza o usageCount total do usuário
         if (car.getUser() != null) {
             car.getUser().recalculateTotalUsage();
-            userService.updateUser(car.getUser().getId(), car.getUser());
         }
 
         return car;

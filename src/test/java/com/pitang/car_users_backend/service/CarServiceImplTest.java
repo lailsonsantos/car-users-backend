@@ -31,8 +31,7 @@ class CarServiceImplTest {
     @BeforeEach
     void setUp() {
         repository = Mockito.mock(CarRepository.class);
-        UserService userService = Mockito.mock(UserService.class);
-        carService = new CarServiceImpl(repository, userService);
+        carService = new CarServiceImpl(repository);
     }
 
     /**

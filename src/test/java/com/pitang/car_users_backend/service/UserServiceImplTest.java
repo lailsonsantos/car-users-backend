@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -43,9 +44,13 @@ class UserServiceImplTest {
     @Test
     void testCreateUser_Success() {
         UserEntity user = new UserEntity();
+        user.setFirstName("Test");
+        user.setLastName("User");
+        user.setBirthday(LocalDate.of(1990, 1, 1));
         user.setEmail("email@test.com");
         user.setLogin("testuser");
         user.setPassword("123456");
+        user.setPhone("123456789");
 
         when(repository.existsByEmail("email@test.com")).thenReturn(false);
         when(repository.existsByLogin("testuser")).thenReturn(false);
@@ -69,9 +74,13 @@ class UserServiceImplTest {
     @Test
     void testCreateUser_LoginExists() {
         UserEntity user = new UserEntity();
+        user.setFirstName("Test");
+        user.setLastName("User");
+        user.setBirthday(LocalDate.of(1990, 1, 1));
         user.setEmail("ok@test.com");
         user.setLogin("duplicado");
         user.setPassword("123456");
+        user.setPhone("123456789");
 
         when(repository.existsByLogin("duplicado")).thenReturn(true);
 
@@ -86,9 +95,13 @@ class UserServiceImplTest {
     void testUpdateUser_Success() {
         UserEntity existing = new UserEntity();
         existing.setId(1L);
+        existing.setFirstName("Old");
+        existing.setLastName("User");
+        existing.setBirthday(LocalDate.of(1990, 1, 1));
         existing.setEmail("old@test.com");
         existing.setLogin("olduser");
         existing.setPassword("oldpwd");
+        existing.setPhone("123456789");
         existing.setCreatedAt(LocalDateTime.now());
 
         when(repository.findById(1L)).thenReturn(Optional.of(existing));
@@ -96,9 +109,13 @@ class UserServiceImplTest {
         when(passwordEncoder.encode("newpwd")).thenReturn("hashedNew");
 
         UserEntity updateData = new UserEntity();
+        updateData.setFirstName("New");
+        updateData.setLastName("User");
+        updateData.setBirthday(LocalDate.of(1990, 1, 1));
         updateData.setEmail("new@test.com");
         updateData.setLogin("newuser");
         updateData.setPassword("newpwd");
+        updateData.setPhone("123456789");
 
         UserEntity updated = userService.updateUser(1L, updateData);
 

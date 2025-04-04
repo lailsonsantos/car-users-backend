@@ -5,6 +5,9 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.LocalDate;
+import java.util.List;
+
 /**
  * DTO para atualização do usuário.
  */
@@ -25,6 +28,16 @@ public class UserRequestUpdate {
     @NotBlank(message = "O login não pode ser nulo, vazio ou em branco")
     private String login;
 
+    private String password;
+
     @NotBlank(message = "O telefone não pode ser nulo, vazio ou em branco")
     private String phone;
+
+    @NotBlank(message = "A data de nascimento não pode ser nula")
+    private LocalDate birthday;
+
+    @NotBlank(message = "O carro não pode se nulo")
+    private List<CarRequest> cars;
+
+    private String photoUrl;
 }

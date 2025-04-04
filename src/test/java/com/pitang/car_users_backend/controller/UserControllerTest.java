@@ -127,7 +127,13 @@ class UserControllerTest {
     @Test
     void testUploadUserPhoto_Failed() throws Exception {
         MultipartFile file = Mockito.mock(MultipartFile.class);
+
+        when(file.isEmpty()).thenReturn(false);
+        when(file.getContentType()).thenReturn("image/jpeg");
         when(file.getOriginalFilename()).thenReturn("test.jpg");
+        when(userService.updateUserPhoto(eq(10L), anyString()))
+                .thenReturn(new UserEntity());
+
         doThrow(new IOException("Simulated error")).when(file).transferTo(any(File.class));
 
         UserException ex = assertThrows(UserException.class, () -> {

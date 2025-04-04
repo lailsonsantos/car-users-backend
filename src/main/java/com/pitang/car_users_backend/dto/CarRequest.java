@@ -12,6 +12,8 @@ import lombok.Setter;
 @Getter
 public class CarRequest {
 
+    private Long id;
+
     @NotNull(message = "O ano de fabricação não pode ser nulo")
     private Integer year;
 

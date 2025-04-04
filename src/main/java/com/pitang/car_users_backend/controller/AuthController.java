@@ -61,14 +61,12 @@ public class AuthController {
 
             SecurityContextHolder.getContext().setAuthentication(authentication);
 
-            // Recupera o usuário pelo login
             UserEntity user = usuarioRepository.findByLogin(loginRequest.getLogin())
                     .orElseThrow(() -> new UserException(UserErrorCode.INVALID_LOGIN_OR_PASSWORD));
 
             // Gera o token passando o username e o id do usuário
             String token = jwtUtil.generateToken(user.getLogin(), user.getId());
 
-            // Atualiza o lastLogin do usuário
             user.setLastLogin(LocalDateTime.now());
             usuarioRepository.save(user);
 

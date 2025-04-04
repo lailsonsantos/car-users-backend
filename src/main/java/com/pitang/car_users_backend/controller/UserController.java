@@ -9,6 +9,8 @@ import com.pitang.car_users_backend.exception.UserException;
 import com.pitang.car_users_backend.model.UserEntity;
 import com.pitang.car_users_backend.service.UserService;
 import jakarta.validation.Valid;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpStatus;
@@ -18,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -34,6 +37,8 @@ import java.util.stream.Stream;
 @RestController
 @RequestMapping("/api/users")
 public class UserController {
+
+    private static final Logger logger = LoggerFactory.getLogger(UserController.class);
 
     private final UserService service;
 
@@ -168,34 +173,43 @@ public class UserController {
     @PostMapping("/{id}/photo")
     public ResponseEntity<UserResponse> uploadUserPhoto(
             @PathVariable Long id,
-            @RequestParam("file") MultipartFile file) throws IOException {
+            @RequestParam("file") MultipartFile file) {
 
-        // Verificar se o arquivo é uma imagem
-        if (file.isEmpty() || file.getContentType() == null || !file.getContentType().startsWith("image/")) {
+        if (file.isEmpty() || (file.getContentType() != null && !file.getContentType().startsWith("image/"))) {
             throw new UserException(UserErrorCode.INVALID_PHOTO);
         }
 
-        // Obter a extensão do arquivo original
         String originalFilename = file.getOriginalFilename();
         String fileExtension = "";
-
         if (originalFilename != null && originalFilename.contains(".")) {
             fileExtension = originalFilename.substring(originalFilename.lastIndexOf("."));
         }
 
-        // Criar diretório se não existir
         String uploadDir = "uploads/users";
         Path uploadPath = Paths.get(uploadDir).toAbsolutePath().normalize();
-        Files.createDirectories(uploadPath);
+        try {
+            Files.createDirectories(uploadPath);
+        } catch (IOException e) {
+            throw new UserException(UserErrorCode.UPLOAD_FAILED);
+        }
 
-        // Gerar nome do arquivo com a extensão original
         String fileName = "user_" + id + fileExtension;
         Path filePath = uploadPath.resolve(fileName);
 
-        // Salvar arquivo
-        file.transferTo(filePath);
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(uploadPath, "user_" + id + ".*")) {
+            for (Path existingFile : stream) {
+                Files.delete(existingFile);
+            }
+        } catch (IOException ex) {
+            logger.error("Erro de limpeza dos arquivos: {}", ex.getMessage());
+        }
 
-        // Atualizar apenas a photoUrl do usuário
+        try {
+            file.transferTo(filePath.toFile());
+        } catch (IOException e) {
+            throw new UserException(UserErrorCode.UPLOAD_FAILED);
+        }
+
         UserEntity updatedUser = service.updateUserPhoto(id, "/api/users/" + id + "/photo");
 
         return ResponseEntity.ok(UserMapper.toResponse(updatedUser));

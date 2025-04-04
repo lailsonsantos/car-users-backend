@@ -82,7 +82,6 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             return;
         }
 
-        // Obtém o header de autorização
         String header = request.getHeader("Authorization");
 
         // Se não houver header ou não começar com "Bearer ", segue o filtro sem autenticação
@@ -102,7 +101,6 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             return;
         }
 
-        // Se o username foi obtido e não há autenticação no contexto, prossegue com a validação
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             var userDetails = customUserDetailsService.loadUserByUsername(username);
 

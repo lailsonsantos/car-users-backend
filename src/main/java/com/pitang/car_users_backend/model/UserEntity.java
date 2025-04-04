@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -52,7 +53,7 @@ public class UserEntity {
     private LocalDateTime lastLogin;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Car> cars;
+    private List<Car> cars = new ArrayList<>();
 
     @Column(name = "photo_url")
     private String photoUrl;
