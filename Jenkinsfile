@@ -29,15 +29,5 @@ pipeline {
                 }
             }
         }
-
-        stage('Deploy Backend to Heroku') {
-          steps {
-            dir('back') {
-              sh "heroku container:login"
-              sh "heroku container:push web --app $HEROKU_BACK_APP"
-              sh "heroku container:release web --app $HEROKU_BACK_APP"
-            }
-          }
-        }
     }
 }

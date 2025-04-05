@@ -1,4 +1,3 @@
-HELP.md
 target/
 uploads/
 !.mvn/wrapper/maven-wrapper.jar
