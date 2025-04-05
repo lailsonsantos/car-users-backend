@@ -49,7 +49,7 @@ docker compose up -d
 ```
 
 Acesse:
-- Jenkins: http://localhost:8080
+- Jenkins: http://localhost:8081
 - SonarQube: http://localhost:9000 (login padrão: `admin` / `admin`)
 
 ### ▶️ Rodar a aplicação localmente
