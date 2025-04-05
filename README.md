@@ -34,6 +34,64 @@ Justificamos o uso dessas tecnologias por sua robustez, padronização de mercad
 
 ---
 
+## ❗ Erros e Rotas da API
+
+### 🔐 Autenticação e Usuários
+
+| URL | Descrição | Códigos de erro |
+|-----|-----------|-----------------|
+| `/api/signin` | Espera `login` e `password`, retorna JWT com informações do usuário logado | 1 |
+| `/api/users` | Cadastrar novo usuário | 2, 3, 4, 5 |
+| `/api/users/{id}` | Atualizar usuário pelo ID | 2, 3, 4, 5 |
+
+**Erros possíveis:**
+- **1**: Login inexistente ou senha inválida → `"Invalid login or password"`
+- **2**: E-mail já existente → `"Email already exists"`
+- **3**: Login já existente → `"Login already exists"`
+- **4**: Campos inválidos → `"Invalid fields"`
+- **5**: Campos não preenchidos → `"Missing fields"`
+
+---
+
+### 👤 Perfil e Carros
+
+| URL | Descrição | Códigos de erro |
+|-----|-----------|-----------------|
+| `/api/me` | Retorna dados do usuário logado, como nome, email, carros, `createdAt` e `lastLogin` | 1, 2 |
+| `/api/cars` | Listar todos os carros do usuário logado | 1, 2 |
+| `/api/cars` | Cadastrar novo carro | 1, 2, 3, 4, 5 |
+| `/api/cars/{id}` | Buscar carro por ID | 1, 2 |
+| `/api/cars/{id}` | Remover carro por ID | 1, 2 |
+| `/api/cars/{id}` | Atualizar carro por ID | 1, 2, 3, 4, 5 |
+
+**Erros possíveis:**
+- **1**: Token não enviado → `"Unauthorized"`
+- **2**: Token expirado → `"Unauthorized - invalid session"`
+- **3**: Placa já existente → `"License plate already exists"`
+- **4**: Campos inválidos → `"Invalid fields"`
+- **5**: Campos não preenchidos → `"Missing fields"`
+
+---
+
+## 🔀 ROTAS DA API
+
+### 🔐 Autenticação
+- `POST /api/signin` → Login do usuário
+
+### 👤 Usuários
+- `POST /api/users` → Cadastro
+- `PUT /api/users/{id}` → Atualização
+- `GET /api/me` → Dados do usuário logado
+
+### 🚗 Carros
+- `GET /api/cars` → Listar carros
+- `POST /api/cars` → Criar carro
+- `GET /api/cars/{id}` → Buscar por ID
+- `PUT /api/cars/{id}` → Atualizar
+- `DELETE /api/cars/{id}` → Excluir
+
+---
+
 ## 🚀 Como executar o projeto
 
 ### ✅ Pré-requisitos
