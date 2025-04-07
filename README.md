@@ -14,6 +14,7 @@ API RESTful para gerenciamento de usuários e carros. Desenvolvida com Spring Bo
 6. Eu, como desenvolvedor, desejo visualizar a documentação via Swagger.
 7. Eu, como desenvolvedor, desejo garantir qualidade de código via SonarQube.
 8. Eu, como devops, desejo automatizar o build/teste/deploy via Jenkins.
+9. Eu, como desenvolvedor, desejo adicionaro plugin do Jacoco.
 
 > A primeira linha de cada commit no repositório deve utilizar a descrição da estória de usuário associada.
 
@@ -29,6 +30,7 @@ API RESTful para gerenciamento de usuários e carros. Desenvolvida com Spring Bo
 - **Jenkins** com pipeline automatizado
 - **Docker Compose** para orquestração local de Jenkins, SonarQube e PostgreSQL
 - **Heroku** como plataforma de deploy final (sem necessidade de configurar servidor próprio)
+- **Jacoco** como plugin para verificar a cobertura dos testes unitários
 
 Justificamos o uso dessas tecnologias por sua robustez, padronização de mercado, fácil integração com ferramentas de CI/CD e alta compatibilidade com ambientes em nuvem como Heroku.
 
@@ -133,7 +135,7 @@ http://localhost:8080/swagger-ui.html
 ### 🔗 URL de produção:
 
 ```
-https://stormy-dusk-62613-4cbafeec3a65.herokuapp.com
+https://car-users-backend-3ffe4145b6c3.herokuapp.com
 ```
 
 Esse endereço simula o mesmo comportamento de um backend local em `http://localhost:8080`
@@ -147,8 +149,8 @@ heroku login
 # Criar app (caso não exista)
 heroku create nome-do-app
 
-# Adicionar buildpacks (caso seja Java)
-heroku buildpacks:set heroku/java
+# Adicione manualmente o app
+heroku git:remote -a nome-do-seu-app
 
 # Fazer deploy
 git push heroku main

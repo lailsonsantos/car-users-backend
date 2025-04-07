@@ -174,7 +174,7 @@ public class CarServiceImpl implements CarService {
         try {
             Files.createDirectories(uploadPath);
         } catch (IOException e) {
-            throw new CarException(CarErrorCode.UPLOAD_FAILED); // lailson
+            throw new CarException(CarErrorCode.UPLOAD_FAILED);
         }
 
         String fileName = "car_" + id + fileExtension;

@@ -61,6 +61,11 @@ public class CarController {
     public ResponseEntity<CarResponse> getById(@PathVariable Long id, @RequestParam Long userId) {
         validateUser(userId);
         Car car = service.getCarUserById(id);
+
+        if (car.getUser() == null || !car.getUser().getId().equals(userId)) {
+            return null;
+        }
+
         return ResponseEntity.ok(CarMapper.toResponse(car));
     }
 
