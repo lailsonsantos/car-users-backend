@@ -63,7 +63,7 @@ public class CarController {
         Car car = service.getCarUserById(id);
 
         if (car.getUser() == null || !car.getUser().getId().equals(userId)) {
-            return null;
+            throw new CarException(CarErrorCode.CAR_NOT_FOUND);
         }
 
         return ResponseEntity.ok(CarMapper.toResponse(car));
